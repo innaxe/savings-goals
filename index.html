@@ -136,6 +136,14 @@
   .seg button.on{background:#fff;color:var(--ink);box-shadow:var(--sh-sm)}
   .del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;font-weight:600}
   .del:hover{color:var(--rose)}
+  .people-pick{display:flex;flex-wrap:wrap;gap:8px;margin:2px 0 12px}
+  .pp{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 12px;font-size:13px;font-weight:600;color:var(--ink2);cursor:pointer}
+  .pp.on{border-color:var(--accent);background:var(--accent-weak);color:var(--accent)}
+  .pp .pp-x{color:var(--muted2);font-weight:700;font-size:13px;cursor:pointer;line-height:1}
+  .pp .pp-x:hover{color:var(--rose)}
+  .pp-empty{font-size:12.5px;color:var(--muted);padding:4px 0}
+  .addp{display:flex;gap:8px;align-items:stretch}
+  .addp input{flex:1;min-width:0}
 </style>
 </head>
 <body>
@@ -283,7 +291,15 @@
       <div class="field"><label>เริ่มเก็บ</label><input type="month" id="gStart"></div>
       <div class="field"><label>ให้ถึงเป้าเดือน</label><input type="month" id="gEnd"></div>
     </div>
-    <div class="field" id="membersField"><label>รายชื่อสมาชิก — พิมพ์ "ชื่อเล่น:ชื่อจริง" คั่นด้วย , (ชื่อจริงจะโชว์ใน Discord ตามสลิป)</label><input type="text" id="gMembers" placeholder="บอส:สมชาย ใจดี, มิ้น:สมหญิง รักดี"></div>
+    <div class="field" id="membersField">
+      <label>เลือกสมาชิกที่ร่วมเป้านี้ (แตะชื่อเพื่อเลือก/เอาออก)</label>
+      <div id="peoplePick" class="people-pick"></div>
+      <div class="addp">
+        <input type="text" id="pNick" placeholder="ชื่อเล่น">
+        <input type="text" id="pReal" placeholder="ชื่อจริง (ตามสลิป)">
+        <button type="button" class="btn soft" style="width:auto;padding:0 14px;flex:0 0 auto" onclick="addPersonFromInputs()">+ เพิ่มคน</button>
+      </div>
+    </div>
     <div class="field"><label>สีธีม</label><div class="swatches" id="swatches"></div></div>
     <button class="btn primary" onclick="saveGoal()">บันทึกเป้าหมาย</button>
     <div style="height:8px"></div>
@@ -331,6 +347,7 @@ const CHECK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-w
 let state=load();
 let collapsed={members:false,gridSec:false};
 let editingId=null, editMode="group", editAccent=ACCENTS[0];
+let editorMembers=new Set();
 
 function load(){
   try{ const raw=localStorage.getItem(LS_KEY); if(raw){ const s=JSON.parse(raw); if(s.goals&&s.goals.length) return s; } }catch(e){}
@@ -535,6 +552,16 @@ function buildEditorChrome(){
   document.getElementById('swatches').innerHTML=ACCENTS.map(c=>`<div class="sw" data-c="${c}" style="background:${c}" onclick="pickAccent('${c}')"></div>`).join('');
   document.getElementById('emoPresets').innerHTML=EMOS.map(e=>`<button onclick="document.getElementById('gEmo').value='${e}'">${e}</button>`).join('');
 }
+function renderPeoplePicker(){
+  const box=document.getElementById('peoplePick'); if(!box) return;
+  const ppl=state.people||[];
+  if(!ppl.length){ box.innerHTML='<div class="pp-empty">ยังไม่มีรายชื่อ — เพิ่มคนด้านล่างได้เลย</div>'; return; }
+  box.innerHTML=ppl.map(function(p){ const sel=editorMembers.has(p.nick);
+    return `<span class="pp ${sel?'on':''}" onclick="togglePerson(${p.id})">${sel?'✓ ':''}${esc(p.nick)}${p.real?(' · '+esc(p.real)):''}<b class="pp-x" onclick="event.stopPropagation();removePerson(${p.id})">✕</b></span>`; }).join('');
+}
+function togglePerson(id){ const p=(state.people||[]).find(function(x){return x.id===id;}); if(!p)return; if(editorMembers.has(p.nick)) editorMembers.delete(p.nick); else editorMembers.add(p.nick); renderPeoplePicker(); }
+function removePerson(id){ const p=(state.people||[]).find(function(x){return x.id===id;}); if(!p)return; if(!confirm('ลบ "'+p.nick+'" ออกจากรายชื่อ?'))return; state.people=(state.people||[]).filter(function(x){return x.id!==id;}); editorMembers.delete(p.nick); save(); renderPeoplePicker(); }
+function addPersonFromInputs(){ const nick=document.getElementById('pNick').value.trim(); const real=document.getElementById('pReal').value.trim(); if(!nick){ alert('ใส่ชื่อเล่นก่อน'); return; } if(!state.people) state.people=[]; if(state.people.some(function(p){return p.nick===nick;})){ alert('มีชื่อเล่นนี้แล้ว'); return; } const id=(state.people.reduce(function(m,p){return Math.max(m,p.id||0);},0))+1; state.people.push({id:id,nick:nick,real:real}); editorMembers.add(nick); document.getElementById('pNick').value=''; document.getElementById('pReal').value=''; save(); renderPeoplePicker(); }
 function pickAccent(c){ editAccent=c; document.querySelectorAll('#swatches .sw').forEach(s=>s.classList.toggle('sel',s.dataset.c===c)); }
 function setMode(m){ editMode=m; document.getElementById('segGroup').classList.toggle('on',m==='group'); document.getElementById('segSolo').classList.toggle('on',m==='solo'); document.getElementById('membersField').style.display=m==='solo'?'none':'block'; }
 
@@ -544,7 +571,7 @@ function newGoal(){
   document.getElementById('gEmo').value='🎯'; document.getElementById('gName2').value='';
   document.getElementById('gTarget').value=''; document.getElementById('gCur').value='฿';
   const s=nowYM(); document.getElementById('gStart').value=s; document.getElementById('gEnd').value=ymAdd(s,11);
-  document.getElementById('gMembers').value=''; editAccent=ACCENTS[0]; pickAccent(editAccent); setMode('group');
+  editAccent=ACCENTS[0]; pickAccent(editAccent); editorMembers=new Set(); renderPeoplePicker(); setMode('group');
   showModal('mGoal');
 }
 function editGoal(){
@@ -554,7 +581,8 @@ function editGoal(){
   document.getElementById('gEmo').value=g.emoji||'🎯'; document.getElementById('gName2').value=g.name;
   document.getElementById('gTarget').value=g.target; document.getElementById('gCur').value=g.currency||'฿';
   document.getElementById('gStart').value=g.start; document.getElementById('gEnd').value=g.end;
-  document.getElementById('gMembers').value=(g.members||[]).map(function(m){ const r=g.realNames&&g.realNames[m]; return r?(m+':'+r):m; }).join(', ');
+  (g.members||[]).forEach(function(nick){ if(nick==='ฉัน')return; if(!(state.people||[]).some(function(p){return p.nick===nick;})){ if(!state.people)state.people=[]; const pid=(state.people.reduce(function(m,p){return Math.max(m,p.id||0);},0))+1; state.people.push({id:pid,nick:nick,real:(g.realNames&&g.realNames[nick])||''}); } });
+  editorMembers=new Set((g.members||[]).filter(function(m){return m!=='ฉัน';})); renderPeoplePicker();
   editAccent=g.accent||ACCENTS[0]; pickAccent(editAccent); setMode(isSolo(g)?'solo':'group');
   showModal('mGoal');
 }
@@ -566,7 +594,7 @@ function saveGoal(){
   if(end<start) end=start;
   let realNames={}; let members;
   if(editMode==='solo'){ members=["ฉัน"]; }
-  else{ members=[]; document.getElementById('gMembers').value.split(',').forEach(function(part){ part=part.trim(); if(!part)return; const bits=part.split(':'); const nick=bits[0].trim(); const real=(bits.slice(1).join(':')||'').trim(); if(!nick)return; members.push(nick); if(real) realNames[nick]=real; }); if(!members.length) members=["ฉัน"]; }
+  else{ members=[...editorMembers]; if(!members.length) members=["ฉัน"]; members.forEach(function(nick){ const p=(state.people||[]).find(function(x){return x.nick===nick;}); if(p&&p.real) realNames[nick]=p.real; }); }
   const emoji=document.getElementById('gEmo').value.trim()||'🎯';
   const currency=document.getElementById('gCur').value.trim()||'฿';
   if(editingId){ const g=state.goals.find(x=>x.id===editingId); Object.assign(g,{name,target,start,end,members,emoji,currency,accent:editAccent,realNames}); }
