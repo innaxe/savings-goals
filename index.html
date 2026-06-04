@@ -283,7 +283,7 @@
       <div class="field"><label>เริ่มเก็บ</label><input type="month" id="gStart"></div>
       <div class="field"><label>ให้ถึงเป้าเดือน</label><input type="month" id="gEnd"></div>
     </div>
-    <div class="field" id="membersField"><label>รายชื่อสมาชิก (คั่นด้วย ,)</label><input type="text" id="gMembers" placeholder="บอส, มิ้น, ต้น, ฟ้า, นัท, กิ๊ฟ"></div>
+    <div class="field" id="membersField"><label>รายชื่อสมาชิก — พิมพ์ "ชื่อเล่น:ชื่อจริง" คั่นด้วย , (ชื่อจริงจะโชว์ใน Discord ตามสลิป)</label><input type="text" id="gMembers" placeholder="บอส:สมชาย ใจดี, มิ้น:สมหญิง รักดี"></div>
     <div class="field"><label>สีธีม</label><div class="swatches" id="swatches"></div></div>
     <button class="btn primary" onclick="saveGoal()">บันทึกเป้าหมาย</button>
     <div style="height:8px"></div>
@@ -554,7 +554,7 @@ function editGoal(){
   document.getElementById('gEmo').value=g.emoji||'🎯'; document.getElementById('gName2').value=g.name;
   document.getElementById('gTarget').value=g.target; document.getElementById('gCur').value=g.currency||'฿';
   document.getElementById('gStart').value=g.start; document.getElementById('gEnd').value=g.end;
-  document.getElementById('gMembers').value=(g.members||[]).join(', ');
+  document.getElementById('gMembers').value=(g.members||[]).map(function(m){ const r=g.realNames&&g.realNames[m]; return r?(m+':'+r):m; }).join(', ');
   editAccent=g.accent||ACCENTS[0]; pickAccent(editAccent); setMode(isSolo(g)?'solo':'group');
   showModal('mGoal');
 }
@@ -564,12 +564,13 @@ function saveGoal(){
   const start=document.getElementById('gStart').value||nowYM();
   let end=document.getElementById('gEnd').value||ymAdd(start,11);
   if(end<start) end=start;
-  let members=editMode==='solo'?["ฉัน"]:document.getElementById('gMembers').value.split(',').map(s=>s.trim()).filter(Boolean);
-  if(!members.length) members=["ฉัน"];
+  let realNames={}; let members;
+  if(editMode==='solo'){ members=["ฉัน"]; }
+  else{ members=[]; document.getElementById('gMembers').value.split(',').forEach(function(part){ part=part.trim(); if(!part)return; const bits=part.split(':'); const nick=bits[0].trim(); const real=(bits.slice(1).join(':')||'').trim(); if(!nick)return; members.push(nick); if(real) realNames[nick]=real; }); if(!members.length) members=["ฉัน"]; }
   const emoji=document.getElementById('gEmo').value.trim()||'🎯';
   const currency=document.getElementById('gCur').value.trim()||'฿';
-  if(editingId){ const g=state.goals.find(x=>x.id===editingId); Object.assign(g,{name,target,start,end,members,emoji,currency,accent:editAccent}); }
-  else{ const id=(state.goals.reduce((m,x)=>Math.max(m,x.id||0),0))+1; state.goals.push({id,name,target,start,end,members,emoji,currency,accent:editAccent,sheetCsvUrl:"",contributions:[]}); state.activeId=id; }
+  if(editingId){ const g=state.goals.find(x=>x.id===editingId); Object.assign(g,{name,target,start,end,members,emoji,currency,accent:editAccent,realNames}); }
+  else{ const id=(state.goals.reduce((m,x)=>Math.max(m,x.id||0),0))+1; state.goals.push({id,name,target,start,end,members,emoji,currency,accent:editAccent,realNames,sheetCsvUrl:"",contributions:[]}); state.activeId=id; }
   save(); closeModal('mGoal'); collapsed={members:false,gridSec:false}; render();
 }
 function deleteGoal(){
@@ -612,8 +613,9 @@ async function notifyDiscord(g,c,slip){
   const url=state.discord; if(!url||!g) return;
   const {saved}=tallies(g); const target=g.target||1; const pct=Math.round(saved/target*100);
   let color=24432; try{ color=parseInt((g.accent||'#059669').replace('#',''),16); }catch(e){}
-  const embed={ title:`✅ ${c.name} โอนแล้ว ${money(c.amount,g.currency)}`, color:color,
-    description:`${g.emoji||'🎯'} ${g.name} · งวด ${ymLabel(c.month)}${c.note?(' · '+c.note):''}`,
+  const real=(g.realNames&&g.realNames[c.name])||''; const disp=real||c.name;
+  const embed={ title:`✅ ${disp} โอนแล้ว ${money(c.amount,g.currency)}`, color:color,
+    description:`${g.emoji||'🎯'} ${g.name} · งวด ${ymLabel(c.month)}${real?(' · ชื่อเล่น '+c.name):''}${c.note?(' · '+c.note):''}`,
     fields:[{name:'ยอดสะสมตอนนี้',value:`${money(saved,g.currency)} / ${money(target,g.currency)} (${pct}%)`}],
     footer:{text:'เป้าเงิน'}, timestamp:new Date().toISOString() };
   const payload={ username:'เป้าเงิน', embeds:[embed] };
