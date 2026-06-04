@@ -150,6 +150,7 @@
     </button>
   </header>
 
+  <div id="dash">
   <div class="goalbar" id="goalbar"></div>
 
   <section class="hero card">
@@ -234,9 +235,19 @@
   </div>
 
   <div class="save-status" id="saveStatus"></div>
+  </div>
+
+  <div id="emptyState" style="display:none;text-align:center;padding:54px 24px 40px">
+    <div style="width:66px;height:66px;border-radius:18px;background:var(--accent-weak);display:grid;place-items:center;margin:0 auto 18px">
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" fill="var(--accent)" stroke="none"/></svg>
+    </div>
+    <div style="font-size:18px;font-weight:700;margin-bottom:7px">ยังไม่มีเป้าหมาย</div>
+    <div style="font-size:13.5px;color:var(--muted);line-height:1.65;margin-bottom:22px">สร้างเป้าหมายแรกของคุณ แล้วเริ่มออมเงินให้ถึงเป้าได้เลย</div>
+    <button class="btn primary" style="max-width:280px;margin:0 auto" onclick="newGoal()">+ สร้างเป้าหมายแรก</button>
+  </div>
 </div>
 
-<div class="fab">
+<div class="fab" id="fab">
   <div class="row">
     <button class="btn soft" onclick="openShare()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>
@@ -302,7 +313,7 @@
 
 <script>
 "use strict";
-const LS_KEY="savings_goals_v2";
+const LS_KEY="savings_goals_v3";
 const THMON=["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
 const AVA=["#059669","#2563eb","#7c3aed","#d97706","#e11d48","#0d9488","#4f46e5","#0891b2"];
 const ACCENTS=["#059669","#2563eb","#7c3aed","#d97706","#e11d48","#0f172a"];
@@ -320,16 +331,8 @@ function load(){
 function save(){ try{ localStorage.setItem(LS_KEY,JSON.stringify(state)); flash("บันทึกในเครื่องแล้ว"); }catch(e){ flash("เซฟไม่ได้"); } }
 function flash(t){ const el=document.getElementById('saveStatus'); el.textContent=t; clearTimeout(flash._t); flash._t=setTimeout(()=>el.textContent="",2000); }
 
-function seed(){
-  const g1={id:1,emoji:"🗼",name:"ทริปญี่ปุ่น",accent:"#2563eb",currency:"฿",target:450000,
-    start:"2026-07",end:"2029-06",members:["บอส","มิ้น","ต้น","ฟ้า","นัท","กิ๊ฟ"],sheetCsvUrl:"",contributions:[]};
-  let id=1; ["2026-07","2026-08"].forEach(m=>g1.members.forEach((n,i)=>{ const amt=(i===4&&m==="2026-08")?0:(i===2&&m==="2026-08"?1000:2100); if(amt>0) g1.contributions.push({id:id++,month:m,name:n,amount:amt,note:"สลิป"}); }));
-  const g2={id:2,emoji:"📱",name:"iPhone ใหม่",accent:"#059669",currency:"฿",target:45000,
-    start:"2026-06",end:"2027-03",members:["ฉัน"],sheetCsvUrl:"",
-    contributions:[{id:1,month:"2026-06",name:"ฉัน",amount:5000,note:"เริ่ม"}]};
-  return {goals:[g1,g2],activeId:1};
-}
-function activeGoal(){ return state.goals.find(g=>g.id===state.activeId)||state.goals[0]; }
+function seed(){ return {goals:[],activeId:null}; }
+function activeGoal(){ return state.goals.find(g=>g.id===state.activeId)||state.goals[0]||null; }
 
 function money(n,cur){ cur=cur||activeGoal().currency||"฿"; return cur+Math.round(n).toLocaleString("en-US"); }
 function ymAdd(ym,n){ let [y,m]=ym.split("-").map(Number); m=m-1+n; y+=Math.floor(m/12); m=((m%12)+12)%12; return y+"-"+String(m+1).padStart(2,"0"); }
@@ -351,6 +354,11 @@ function tallies(g){
 
 function render(){
   const g=activeGoal();
+  const empty=!g;
+  document.getElementById('emptyState').style.display=empty?'block':'none';
+  document.getElementById('dash').style.display=empty?'none':'';
+  document.getElementById('fab').style.display=empty?'none':'';
+  if(empty) return;
   document.documentElement.style.setProperty('--accent',g.accent);
   document.documentElement.style.setProperty('--accent-weak',hexSoft(g.accent,0.10));
   renderGoalbar();
@@ -528,9 +536,9 @@ function newGoal(){
   showModal('mGoal');
 }
 function editGoal(){
-  const g=activeGoal(); editingId=g.id;
+  const g=activeGoal(); if(!g){ newGoal(); return; } editingId=g.id;
   document.getElementById('goalEditTitle').textContent='แก้ไขเป้าหมาย';
-  document.getElementById('delGoalBtn').style.display=state.goals.length>1?'inline':'none';
+  document.getElementById('delGoalBtn').style.display='inline';
   document.getElementById('gEmo').value=g.emoji||'🎯'; document.getElementById('gName2').value=g.name;
   document.getElementById('gTarget').value=g.target; document.getElementById('gCur').value=g.currency||'฿';
   document.getElementById('gStart').value=g.start; document.getElementById('gEnd').value=g.end;
@@ -553,9 +561,8 @@ function saveGoal(){
   save(); closeModal('mGoal'); collapsed={members:false,gridSec:false}; render();
 }
 function deleteGoal(){
-  if(state.goals.length<=1){ alert('ต้องมีอย่างน้อย 1 เป้าหมาย'); return; }
   if(!confirm('ลบเป้าหมายนี้และข้อมูลทั้งหมด?'))return;
-  state.goals=state.goals.filter(g=>g.id!==editingId); state.activeId=state.goals[0].id; save(); closeModal('mGoal'); render();
+  state.goals=state.goals.filter(g=>g.id!==editingId); state.activeId=state.goals[0]?state.goals[0].id:null; save(); closeModal('mGoal'); render();
 }
 
 function openShare(){ document.getElementById('sSheet').value=activeGoal().sheetCsvUrl||''; showModal('mShare'); }
@@ -595,7 +602,7 @@ function closeModal(id){ document.getElementById(id).classList.remove('show'); }
 document.querySelectorAll('.modal').forEach(m=>m.addEventListener('click',e=>{ if(e.target===m) m.classList.remove('show'); }));
 
 buildEditorChrome();
-(function init(){ const g=activeGoal(); if(g.sheetCsvUrl){ fetchSheet(g,g.sheetCsvUrl).catch(()=>{}).finally(render); } else render(); })();
+(function init(){ const g=activeGoal(); if(g&&g.sheetCsvUrl){ fetchSheet(g,g.sheetCsvUrl).catch(()=>{}).finally(render); } else render(); })();
 </script>
 </body>
 </html>
