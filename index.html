@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root{
     --bg:#f5f6f8; --card:#ffffff;
@@ -22,11 +23,7 @@
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0;padding:0}
-  body{
-    font-family:'Inter','IBM Plex Sans Thai',system-ui,-apple-system,sans-serif;
-    color:var(--ink); background:var(--bg); min-height:100vh;
-    -webkit-font-smoothing:antialiased; font-feature-settings:"cv11","ss01";
-  }
+  body{font-family:'Inter','IBM Plex Sans Thai',system-ui,-apple-system,sans-serif;color:var(--ink);background:var(--bg);min-height:100vh;-webkit-font-smoothing:antialiased;font-feature-settings:"cv11","ss01"}
   .num{font-variant-numeric:tabular-nums;letter-spacing:-.01em}
   .wrap{max-width:460px;margin:0 auto;padding:14px 16px 92px}
   .card{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--sh-card)}
@@ -73,15 +70,15 @@
   .frow{display:flex;gap:10px;margin-bottom:11px}
   .field{flex:1;min-width:0}
   .field label{display:block;font-size:11px;color:var(--muted);font-weight:600;margin:0 0 5px 1px}
-  select,input[type=number],input[type=text],input[type=month]{
-    width:100%;border:1px solid var(--line);background:#fff;border-radius:10px;padding:11px 12px;
-    font-size:15px;font-family:inherit;color:var(--ink);outline:none;transition:border-color .15s,box-shadow .15s}
+  select,input[type=number],input[type=text],input[type=password],input[type=month]{
+    width:100%;border:1px solid var(--line);background:#fff;border-radius:10px;padding:11px 12px;font-size:15px;font-family:inherit;color:var(--ink);outline:none;transition:border-color .15s,box-shadow .15s}
   select:focus,input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-weak)}
   .btn{width:100%;border:none;border-radius:11px;padding:13px;font-size:14.5px;font-weight:600;font-family:inherit;cursor:pointer;transition:transform .1s,filter .15s}
   .btn:active{transform:scale(.985)}
   .btn.primary{background:var(--accent);color:#fff;box-shadow:var(--sh-sm)}
   .btn.primary:hover{filter:brightness(1.05)}
   .btn.soft{background:var(--card);color:var(--ink2);border:1px solid var(--line);box-shadow:var(--sh-sm)}
+  .btn[disabled]{opacity:.6;pointer-events:none}
   .mcard{padding:13px 14px;margin-bottom:9px}
   .mtop{display:flex;align-items:center;gap:11px}
   .ava{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;font-weight:700;font-size:13px;flex:0 0 auto}
@@ -124,13 +121,11 @@
   .sheet .field{margin-bottom:12px}
   .hint{font-size:12px;color:var(--muted);line-height:1.65;background:var(--bg);border:1px solid var(--line);border-radius:11px;padding:12px;margin:4px 0 14px}
   .hint b{color:var(--ink2)} .hint ol{margin:6px 0 0;padding-left:18px} .hint li{margin-bottom:4px}
-  a.link{color:var(--accent);font-weight:600;text-decoration:none}
   .swatches{display:flex;gap:10px;margin-top:2px}
   .sw{width:28px;height:28px;border-radius:8px;cursor:pointer;border:2px solid #fff;box-shadow:0 0 0 1px var(--line)}
   .sw.sel{box-shadow:0 0 0 2px var(--ink)}
   .emo-presets{display:flex;gap:7px;flex-wrap:wrap;margin-top:7px}
   .emo-presets button{font-size:17px;width:38px;height:38px;border-radius:9px;border:1px solid var(--line);background:#fff;cursor:pointer}
-  .emo-presets button:active{transform:scale(.95)}
   .seg{display:flex;background:var(--bg);border:1px solid var(--line);border-radius:11px;padding:3px;margin-bottom:14px}
   .seg button{flex:1;border:none;background:none;padding:9px;border-radius:8px;font-family:inherit;font-weight:600;font-size:13px;color:var(--muted);cursor:pointer}
   .seg button.on{background:#fff;color:var(--ink);box-shadow:var(--sh-sm)}
@@ -139,8 +134,6 @@
   .people-pick{display:flex;flex-wrap:wrap;gap:8px;margin:2px 0 12px}
   .pp{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 12px;font-size:13px;font-weight:600;color:var(--ink2);cursor:pointer}
   .pp.on{border-color:var(--accent);background:var(--accent-weak);color:var(--accent)}
-  .pp .pp-x{color:var(--muted2);font-weight:700;font-size:13px;cursor:pointer;line-height:1}
-  .pp .pp-x:hover{color:var(--rose)}
   .pp-empty{font-size:12.5px;color:var(--muted);padding:4px 0}
   .addp{display:flex;gap:8px;align-items:stretch}
   .addp input{flex:1;min-width:0}
@@ -151,9 +144,32 @@
   .prow-btn{border:1px solid var(--line);background:#fff;border-radius:9px;padding:7px 11px;font-family:inherit;font-size:12.5px;font-weight:600;color:var(--ink2);cursor:pointer}
   .prow-btn.del{color:var(--rose)}
   .linkbtn{background:none;border:none;color:var(--accent);font-weight:600;font-size:13px;font-family:inherit;cursor:pointer;padding:6px 2px}
+  /* auth gate */
+  .gate{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:100;padding:24px}
+  .gate-card{width:100%;max-width:340px;text-align:center}
+  .gate .brand{justify-content:center;font-size:22px;margin-bottom:8px}
+  .gate-sub{font-size:13px;color:var(--muted);margin-bottom:22px;line-height:1.5}
+  .gate input{text-align:center;margin-bottom:12px}
+  .gate-err{color:var(--rose);font-size:12.5px;min-height:18px;margin-top:10px;font-weight:600}
+  #busy{position:fixed;top:12px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;font-size:12.5px;font-weight:600;padding:8px 16px;border-radius:999px;z-index:90;display:none;box-shadow:var(--sh-pop)}
+  #busy.show{display:block}
 </style>
 </head>
 <body>
+
+<!-- AUTH GATE -->
+<div class="gate" id="gate">
+  <div class="gate-card">
+    <div class="brand"><span class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-5 4 4 8-8"/><path d="M16 8h5v5"/></svg></span> เป้าเงิน</div>
+    <div class="gate-sub">ใส่รหัสผ่านกลุ่มเพื่อเข้าใช้งาน</div>
+    <input type="password" id="gatePw" placeholder="รหัสผ่านกลุ่ม" autocomplete="current-password">
+    <button class="btn primary" id="gateBtn" onclick="doLogin()">เข้าใช้งาน</button>
+    <div class="gate-err" id="gateErr"></div>
+  </div>
+</div>
+
+<div id="busy">⏳ กำลังประมวลผล…</div>
+
 <div class="wrap">
   <header>
     <div class="brand">
@@ -162,9 +178,7 @@
     </div>
     <div style="display:flex;gap:8px">
     <button class="iconbtn" onclick="openPeople()" aria-label="รายชื่อคน"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></button>
-    <button class="iconbtn" onclick="editGoal()" aria-label="ตั้งค่าเป้า">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-    </button>
+    <button class="iconbtn" onclick="editGoal()" aria-label="ตั้งค่าเป้า"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
     </div>
   </header>
 
@@ -176,8 +190,7 @@
       <div class="ring-wrap">
         <svg width="108" height="108" viewBox="0 0 108 108">
           <circle cx="54" cy="54" r="47" fill="none" stroke="var(--line)" stroke-width="9"/>
-          <circle id="ring" cx="54" cy="54" r="47" fill="none" stroke="var(--accent)" stroke-width="9"
-            stroke-linecap="round" transform="rotate(-90 54 54)" stroke-dasharray="295" stroke-dashoffset="295"/>
+          <circle id="ring" cx="54" cy="54" r="47" fill="none" stroke="var(--accent)" stroke-width="9" stroke-linecap="round" transform="rotate(-90 54 54)" stroke-dasharray="295" stroke-dashoffset="295"/>
         </svg>
         <div class="ring-center num" id="pct">0<small>%</small></div>
       </div>
@@ -203,27 +216,15 @@
     <div class="sec-head"><h2>บันทึกการออม</h2></div>
     <div class="form card">
       <div class="frow">
-        <div class="field" id="nameField">
-          <label>ใคร</label>
-          <select id="fName"></select>
-        </div>
-        <div class="field">
-          <label>เดือน</label>
-          <input type="month" id="fMonth" />
-        </div>
+        <div class="field" id="nameField"><label>ใคร</label><select id="fName"></select></div>
+        <div class="field"><label>เดือน</label><input type="month" id="fMonth" /></div>
       </div>
       <div class="frow">
-        <div class="field" style="flex:1.3">
-          <label>จำนวน (บาท)</label>
-          <input type="number" id="fAmount" inputmode="numeric" placeholder="2,000" />
-        </div>
-        <div class="field">
-          <label>หมายเหตุ</label>
-          <input type="text" id="fNote" placeholder="สลิป" />
-        </div>
+        <div class="field" style="flex:1.3"><label>จำนวน (บาท)</label><input type="number" id="fAmount" inputmode="numeric" placeholder="2,000" /></div>
+        <div class="field"><label>หมายเหตุ</label><input type="text" id="fNote" placeholder="สลิป" /></div>
       </div>
-      <div class="field"><label>แนบสลิป (ไม่บังคับ — แนบแล้วระบบจะส่งเข้า Discord ให้)</label><input type="file" id="fSlip" accept="image/*" /></div>
-      <button class="btn primary" onclick="addContribution()">เพิ่มยอดออม</button>
+      <div class="field"><label>แนบสลิป (ไม่บังคับ — แนบแล้วเก็บบนคลาวด์ + ส่งเข้า Discord)</label><input type="file" id="fSlip" accept="image/*" /></div>
+      <button class="btn primary" id="addBtn" onclick="addContribution()">เพิ่มยอดออม</button>
     </div>
   </div>
 
@@ -234,12 +235,8 @@
 
   <div class="sec">
     <div class="sec-head"><h2>เงินสะสม เทียบ เป้า</h2></div>
-    <div class="chartcard card">
-      <div id="chart"></div>
-      <div class="legend">
-        <span><i style="background:var(--accent)"></i>เก็บจริง</span>
-        <span><i class="dash"></i>เป้าที่ควรถึง</span>
-      </div>
+    <div class="chartcard card"><div id="chart"></div>
+      <div class="legend"><span><i style="background:var(--accent)"></i>เก็บจริง</span><span><i class="dash"></i>เป้าที่ควรถึง</span></div>
     </div>
   </div>
 
@@ -257,28 +254,20 @@
   </div>
 
   <div id="emptyState" style="display:none;text-align:center;padding:54px 24px 40px">
-    <div style="width:66px;height:66px;border-radius:18px;background:var(--accent-weak);display:grid;place-items:center;margin:0 auto 18px">
-      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" fill="var(--accent)" stroke="none"/></svg>
-    </div>
+    <div style="width:66px;height:66px;border-radius:18px;background:var(--accent-weak);display:grid;place-items:center;margin:0 auto 18px"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" fill="var(--accent)" stroke="none"/></svg></div>
     <div style="font-size:18px;font-weight:700;margin-bottom:7px">ยังไม่มีเป้าหมาย</div>
-    <div style="font-size:13.5px;color:var(--muted);line-height:1.65;margin-bottom:22px">สร้างเป้าหมายแรกของคุณ แล้วเริ่มออมเงินให้ถึงเป้าได้เลย</div>
+    <div style="font-size:13.5px;color:var(--muted);line-height:1.65;margin-bottom:22px">สร้างเป้าหมายแรกของกลุ่ม แล้วเริ่มออมเงินให้ถึงเป้าได้เลย</div>
     <button class="btn primary" style="max-width:280px;margin:0 auto" onclick="newGoal()">+ สร้างเป้าหมายแรก</button>
   </div>
 </div>
 
 <div class="fab" id="fab">
   <div class="row">
-    <button class="btn soft" onclick="openShare()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>
-      แชร์ให้เพื่อน
-    </button>
-    <button class="btn soft" onclick="exportJSON()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
-      เซฟไฟล์
-    </button>
+    <button class="btn soft" onclick="openShare()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>แชร์ & ตั้งค่า</button>
   </div>
 </div>
 
+<!-- GOAL EDITOR -->
 <div class="modal" id="mGoal">
   <div class="sheet">
     <div class="grab"></div>
@@ -302,18 +291,19 @@
       <div class="field"><label>ให้ถึงเป้าเดือน</label><input type="month" id="gEnd"></div>
     </div>
     <div class="field" id="membersField">
-      <label>เลือกสมาชิกที่ร่วมเป้านี้ (แตะชื่อเพื่อเลือก/เอาออก)</label>
+      <label>เลือกสมาชิกที่ร่วมเป้านี้ (แตะชื่อเพื่อเลือก)</label>
       <div id="peoplePick" class="people-pick"></div>
       <button type="button" class="linkbtn" onclick="openPeople()">+ เพิ่ม / จัดการรายชื่อคน</button>
     </div>
     <div class="field"><label>สีธีม</label><div class="swatches" id="swatches"></div></div>
-    <button class="btn primary" onclick="saveGoal()">บันทึกเป้าหมาย</button>
+    <button class="btn primary" id="saveGoalBtn" onclick="saveGoal()">บันทึกเป้าหมาย</button>
     <div style="height:8px"></div>
     <button class="btn soft" onclick="closeModal('mGoal')">ยกเลิก</button>
     <div style="height:14px;text-align:center"><button class="del" id="delGoalBtn" onclick="deleteGoal()" style="display:none">ลบเป้าหมายนี้</button></div>
   </div>
 </div>
 
+<!-- PEOPLE -->
 <div class="modal" id="mPeople">
   <div class="sheet">
     <div class="grab"></div>
@@ -330,372 +320,317 @@
   </div>
 </div>
 
+<!-- SHARE / SETTINGS -->
 <div class="modal" id="mShare">
   <div class="sheet">
     <div class="grab"></div>
-    <h3>แชร์ให้เพื่อนเห็นพร้อมกัน</h3>
-    <p class="sub">เว็บนี้พร้อมแชร์อยู่แล้ว · ส่งลิงก์ให้เพื่อนเปิดบนมือถือได้เลย</p>
-    <div class="hint"><b>แจ้งเตือนเข้า Discord:</b> เวลาเพิ่มยอด (พร้อมสลิป) ระบบจะส่งข้อความว่าใครโอนเท่าไหร่ + รูปสลิป + ยอดสะสมล่าสุด เข้าห้อง Discord ให้อัตโนมัติ
-      <ol><li>ในห้อง Discord กดรูปเฟือง (แก้ไขห้อง) → Integrations → Webhooks → New Webhook</li>
-      <li>กด Copy Webhook URL แล้วเอามาวางด้านล่าง</li></ol>
+    <h3>แชร์ & ตั้งค่า</h3>
+    <p class="sub">ข้อมูลทุกคนซิงค์ผ่านคลาวด์แล้ว · ส่งลิงก์ + รหัสผ่านกลุ่มให้เพื่อนเข้าใช้ได้เลย</p>
+    <div class="hint"><b>แจ้งเตือนเข้า Discord:</b> เวลาเพิ่มยอด (พร้อมสลิป) จะส่งข้อความว่าใครโอน + รูปสลิป + ยอดสะสม เข้าห้อง Discord
+      <ol><li>ในห้อง Discord: แก้ไขห้อง → Integrations → Webhooks → New Webhook → Copy URL</li><li>วางด้านล่าง (ตั้งครั้งเดียวต่อเครื่อง)</li></ol>
     </div>
     <div class="field"><label>Discord Webhook URL</label><input type="text" id="dWebhook" placeholder="https://discord.com/api/webhooks/..."></div>
-    <button class="btn primary" onclick="saveDiscord()">เชื่อม Discord</button>
+    <button class="btn primary" onclick="saveDiscord()">บันทึก Discord</button>
     <div style="height:18px"></div>
-    <div class="hint"><b>อยากให้ตัวเลขตรงกันเรียลไทม์ทุกคน?</b> ใช้ Google Sheet เป็นฐานข้อมูลกลางของเป้านี้
-      <ol><li>สร้างชีตคอลัมน์: <b>Date, Name, Amount, Note</b></li>
-      <li>ไฟล์ → แชร์ → เผยแพร่ไปยังเว็บ → เลือกชีต รูปแบบ <b>CSV</b> → คัดลอกลิงก์</li>
-      <li>วางลิงก์ด้านล่าง เว็บจะดึงข้อมูลล่าสุดให้เอง</li></ol>
-    </div>
-    <div class="field"><label>ลิงก์ Google Sheet (CSV) ของเป้านี้</label><input type="text" id="sSheet" placeholder="https://docs.google.com/.../pub?output=csv"></div>
-    <button class="btn primary" onclick="saveSheetUrl()">เชื่อม Google Sheet</button>
-    <div style="height:8px"></div>
-    <label class="btn soft" style="text-align:center;display:block">โหลดไฟล์เซฟ (.json)
-      <input type="file" id="importFile" accept="application/json,.json" style="display:none" onchange="importJSON(event)"></label>
-    <div style="height:8px"></div>
     <button class="btn soft" onclick="closeModal('mShare')">ปิด</button>
+    <div style="height:12px;text-align:center"><button class="del" onclick="logout()">ออกจากระบบ</button></div>
   </div>
 </div>
 
 <script>
 "use strict";
-const LS_KEY="savings_goals_v3";
+/* ===== CONFIG ===== */
+const SUPA_URL='https://sronrfhcsvfsxqhowohv.supabase.co';
+const SUPA_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNyb25yZmhjc3Zmc3hxaG93b2h2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1NTcyMzQsImV4cCI6MjA5NjEzMzIzNH0.zzFBXvCFWYlURqUHDUmGP3H4RlwkZf0f8KHVY3qGpnQ';
+const SHARED_EMAIL='bankthgg175@gmail.com';
+const WEBHOOK_KEY='discord_webhook_v1';
+
+const sb = window.supabase.createClient(SUPA_URL, SUPA_ANON);
+
 const THMON=["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
 const AVA=["#059669","#2563eb","#7c3aed","#d97706","#e11d48","#0d9488","#4f46e5","#0891b2"];
 const ACCENTS=["#059669","#2563eb","#7c3aed","#d97706","#e11d48","#0f172a"];
 const EMOS=["🎯","🗼","✈️","🏖️","📱","💻","🚗","🏠","💍","🎓","🎮","💰","🐱","🎁"];
 const CHECK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>';
 
-let state=load();
+let state={people:[],goals:[],activeId:null};
 let collapsed={members:false,gridSec:false};
 let editingId=null, editMode="group", editAccent=ACCENTS[0];
 let editorMembers=new Set();
+let working=false;
 
-function load(){
-  try{ const raw=localStorage.getItem(LS_KEY); if(raw){ const s=JSON.parse(raw); if(s.goals&&s.goals.length) return s; } }catch(e){}
-  return seed();
+/* ===== auth gate ===== */
+async function init(){
+  buildEditorChrome();
+  try{
+    const {data}=await sb.auth.getSession();
+    if(data && data.session){ enterApp(); }
+    else { document.getElementById('gate').style.display='flex'; }
+  }catch(e){ document.getElementById('gate').style.display='flex'; }
 }
-function save(){ try{ localStorage.setItem(LS_KEY,JSON.stringify(state)); flash("บันทึกในเครื่องแล้ว"); }catch(e){ flash("เซฟไม่ได้"); } }
-function flash(t){ const el=document.getElementById('saveStatus'); el.textContent=t; clearTimeout(flash._t); flash._t=setTimeout(()=>el.textContent="",2000); }
+async function doLogin(){
+  const pw=document.getElementById('gatePw').value;
+  if(!pw){ document.getElementById('gateErr').textContent='ใส่รหัสผ่านก่อน'; return; }
+  document.getElementById('gateErr').textContent=''; document.getElementById('gateBtn').disabled=true;
+  busy(true);
+  const {error}=await sb.auth.signInWithPassword({email:SHARED_EMAIL,password:pw});
+  busy(false); document.getElementById('gateBtn').disabled=false;
+  if(error){ document.getElementById('gateErr').textContent='รหัสผ่านไม่ถูกต้อง'; return; }
+  enterApp();
+}
+function enterApp(){
+  document.getElementById('gate').style.display='none';
+  setupRealtime();
+  loadAll();
+}
+async function logout(){ await sb.auth.signOut(); location.reload(); }
 
-function seed(){ return {goals:[],activeId:null}; }
-function activeGoal(){ return state.goals.find(g=>g.id===state.activeId)||state.goals[0]||null; }
+/* ===== realtime ===== */
+let rtTimer=null;
+function debouncedLoad(){ clearTimeout(rtTimer); rtTimer=setTimeout(loadAll,400); }
+function setupRealtime(){
+  sb.channel('rt-all')
+    .on('postgres_changes',{event:'*',schema:'public',table:'people'},debouncedLoad)
+    .on('postgres_changes',{event:'*',schema:'public',table:'goals'},debouncedLoad)
+    .on('postgres_changes',{event:'*',schema:'public',table:'contributions'},debouncedLoad)
+    .subscribe();
+}
 
-function money(n,cur){ cur=cur||activeGoal().currency||"฿"; return cur+Math.round(n).toLocaleString("en-US"); }
+/* ===== load ===== */
+async function loadAll(){
+  try{
+    const [pp,gg,cc]=await Promise.all([
+      sb.from('people').select('*').order('created_at',{ascending:true}),
+      sb.from('goals').select('*').order('created_at',{ascending:true}),
+      sb.from('contributions').select('*').order('created_at',{ascending:true})
+    ]);
+    state.people=(pp.data||[]).map(function(p){return {id:p.id,nick:p.nick,real:p.real||''};});
+    const byGoal={};
+    (cc.data||[]).forEach(function(c){ (byGoal[c.goal_id]=byGoal[c.goal_id]||[]).push({id:c.id,name:c.name,month:c.month,amount:Number(c.amount)||0,note:c.note||'',slip_url:c.slip_url||''}); });
+    state.goals=(gg.data||[]).map(function(g){return {id:g.id,name:g.name,emoji:g.emoji||'🎯',accent:g.accent||'#059669',currency:g.currency||'฿',target:Number(g.target)||0,start:g.start_month,end:g.end_month,members:g.members||[],contributions:byGoal[g.id]||[]};});
+    if(!state.goals.find(function(x){return x.id===state.activeId;})) state.activeId=state.goals[0]?state.goals[0].id:null;
+    render();
+  }catch(e){ flash('โหลดข้อมูลไม่ได้: '+(e.message||e)); }
+}
+
+/* ===== helpers ===== */
+function activeGoal(){ return state.goals.find(function(g){return g.id===state.activeId;})||null; }
+function realOf(nick){ const p=(state.people||[]).find(function(x){return x.nick===nick;}); return p&&p.real?p.real:''; }
+function money(n,cur){ cur=cur||(activeGoal()?activeGoal().currency:'฿')||'฿'; return cur+Math.round(n).toLocaleString("en-US"); }
 function ymAdd(ym,n){ let [y,m]=ym.split("-").map(Number); m=m-1+n; y+=Math.floor(m/12); m=((m%12)+12)%12; return y+"-"+String(m+1).padStart(2,"0"); }
 function ymLabel(ym){ const [y,m]=ym.split("-").map(Number); return THMON[m-1]+" "+String(y+543).slice(-2); }
 function nowYM(){ const d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0"); }
 function monthsBetween(s,e){ const [sy,sm]=s.split("-").map(Number),[ey,em]=e.split("-").map(Number); return Math.max(1,(ey-sy)*12+(em-sm)+1); }
 function monthsList(g){ const n=monthsBetween(g.start,g.end); const out=[]; for(let i=0;i<n;i++) out.push(ymAdd(g.start,i)); return out; }
-function elapsedMonths(g){ const cur=nowYM(); let n=0; for(const m of monthsList(g)){ if(m<=cur) n++; } return n; }
-function leftMonths(g){ return Math.max(0, monthsBetween(g.start,g.end)-elapsedMonths(g)); }
+function elapsedMonths(g){ const cur=nowYM(); let n=0; const L=monthsList(g); for(let i=0;i<L.length;i++){ if(L[i]<=cur) n++; } return n; }
+function leftMonths(g){ return Math.max(0,monthsBetween(g.start,g.end)-elapsedMonths(g)); }
 function isSolo(g){ return (g.members||[]).length<=1; }
 function hexSoft(hex,a){ a=a||0.12; const h=hex.replace('#',''); const r=parseInt(h.slice(0,2),16),gn=parseInt(h.slice(2,4),16),b=parseInt(h.slice(4,6),16); return `rgba(${r},${gn},${b},${a})`; }
+function tallies(g){ const by={}; (g.members||[]).forEach(function(m){by[m]=0;}); (g.contributions||[]).forEach(function(x){ if(!(x.name in by)) by[x.name]=0; by[x.name]+=Number(x.amount)||0; }); const saved=Object.keys(by).reduce(function(s,k){return s+by[k];},0); return {by:by,saved:saved}; }
+function esc(s){ return String(s).replace(/[&<>"']/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];}); }
+function clampMonth(ym,g){ const min=g.start,max=g.end; return ym<min?min:(ym>max?max:ym); }
+function showModal(id){ document.getElementById(id).classList.add('show'); }
+function closeModal(id){ document.getElementById(id).classList.remove('show'); }
+function busy(b){ working=b; document.getElementById('busy').classList.toggle('show',b); }
+function flash(t){ const el=document.getElementById('saveStatus'); el.textContent=t; clearTimeout(flash._t); flash._t=setTimeout(function(){el.textContent="";},2600); }
 
-function tallies(g){
-  const by={}; (g.members||[]).forEach(m=>by[m]=0);
-  g.contributions.forEach(x=>{ if(!(x.name in by)) by[x.name]=0; by[x.name]+=Number(x.amount)||0; });
-  const saved=Object.values(by).reduce((a,b)=>a+b,0);
-  return {by,saved};
-}
-
+/* ===== render ===== */
 function render(){
-  const g=activeGoal();
-  const empty=!g;
+  const g=activeGoal(); const empty=!g;
   document.getElementById('emptyState').style.display=empty?'block':'none';
   document.getElementById('dash').style.display=empty?'none':'';
   document.getElementById('fab').style.display=empty?'none':'';
-  if(empty) return;
+  if(empty){ renderGoalbar(); return; }
   document.documentElement.style.setProperty('--accent',g.accent);
   document.documentElement.style.setProperty('--accent-weak',hexSoft(g.accent,0.10));
   renderGoalbar();
-
-  const {by,saved}=tallies(g);
-  const target=g.target||1;
-  const pct=Math.min(100,saved/target*100);
-  const months=monthsBetween(g.start,g.end);
-  const memCount=Math.max(1,(g.members||[]).length);
-
-  const circ=2*Math.PI*47;
-  const ring=document.getElementById('ring');
-  ring.setAttribute('stroke-dasharray',circ.toFixed(1));
-  ring.setAttribute('stroke-dashoffset',(circ*(1-pct/100)).toFixed(1));
+  const t=tallies(g); const by=t.by, saved=t.saved;
+  const target=g.target||1; const pct=Math.min(100,saved/target*100);
+  const months=monthsBetween(g.start,g.end); const memCount=Math.max(1,(g.members||[]).length);
+  const circ=2*Math.PI*47; const ring=document.getElementById('ring');
+  ring.setAttribute('stroke-dasharray',circ.toFixed(1)); ring.setAttribute('stroke-dashoffset',(circ*(1-pct/100)).toFixed(1));
   document.getElementById('heroEmo').textContent=g.emoji||"🎯";
   document.getElementById('pct').innerHTML=Math.round(pct)+'<small>%</small>';
   document.getElementById('gname').textContent=g.name;
-  document.getElementById('savedTotal').textContent=money(saved);
-  document.getElementById('goalTotal').textContent='จาก '+money(target)+' · ภายใน '+ymLabel(g.end);
-
-  const remain=Math.max(0,target-saved);
-  const left=leftMonths(g);
-  let pace;
-  if(remain<=0) pace='ถึงเป้าแล้ว เยี่ยมมาก';
-  else if(left<=0) pace='เลยกำหนดแล้ว · ยังขาดอีก '+money(remain);
-  else { const perMonth=remain/left; pace=isSolo(g)? 'ออมต่ออีก '+money(perMonth)+'/เดือน ก็ทันเป้า' : 'อีกคนละ ~'+money(perMonth/memCount)+'/เดือน ก็ทันเป้า'; }
+  document.getElementById('savedTotal').textContent=money(saved,g.currency);
+  document.getElementById('goalTotal').textContent='จาก '+money(target,g.currency)+' · ภายใน '+ymLabel(g.end);
+  const remain=Math.max(0,target-saved); const left=leftMonths(g);
+  let pace; if(remain<=0) pace='ถึงเป้าแล้ว เยี่ยมมาก'; else if(left<=0) pace='เลยกำหนดแล้ว · ยังขาดอีก '+money(remain,g.currency); else { const perMonth=remain/left; pace=isSolo(g)?'ออมต่ออีก '+money(perMonth,g.currency)+'/เดือน ก็ทันเป้า':'อีกคนละ ~'+money(perMonth/memCount,g.currency)+'/เดือน ก็ทันเป้า'; }
   document.getElementById('paceText').textContent=pace;
-
-  const planPer=(target/memCount)/months;
-  const planTotalMonthly=target/months;
-  const elapsed=elapsedMonths(g);
-  const expectedPer=(target/memCount)*elapsed/months;
-  let onTrack=0; (g.members||[]).forEach(m=>{ if((by[m]||0)>=expectedPer*0.999) onTrack++; });
-  if(isSolo(g)){
-    setChip('chip1',money(planTotalMonthly),'แผน/เดือน','');
-    setChip('chip2',money(remain),'เหลืออีก','');
-  }else{
-    setChip('chip1',money(planPer),'ต่อคน/เดือน','');
-    setChip('chip2',onTrack+'/'+memCount,'เก็บตามเป้า',onTrack===memCount?'good':'warn');
-  }
+  const planPer=(target/memCount)/months; const planTotalMonthly=target/months; const elapsed=elapsedMonths(g); const expectedPer=(target/memCount)*elapsed/months;
+  let onTrack=0; (g.members||[]).forEach(function(m){ if((by[m]||0)>=expectedPer*0.999) onTrack++; });
+  if(isSolo(g)){ setChip('chip1',money(planTotalMonthly,g.currency),'แผน/เดือน',''); setChip('chip2',money(remain,g.currency),'เหลืออีก',''); }
+  else{ setChip('chip1',money(planPer,g.currency),'ต่อคน/เดือน',''); setChip('chip2',onTrack+'/'+memCount,'เก็บตามเป้า',onTrack===memCount?'good':'warn'); }
   setChip('chip3',String(left),'เดือนที่เหลือ','');
-
-  const nameField=document.getElementById('nameField');
-  const sel=document.getElementById('fName');
-  const prev=sel.value;
-  sel.innerHTML=(g.members||["ฉัน"]).map(m=>`<option>${esc(m)}</option>`).join('');
-  if((g.members||[]).includes(prev)) sel.value=prev;
-  nameField.style.display=isSolo(g)?'none':'block';
+  const sel=document.getElementById('fName'); const prev=sel.value;
+  sel.innerHTML=(g.members||["ฉัน"]).map(function(m){return `<option>${esc(m)}</option>`;}).join('');
+  if((g.members||[]).indexOf(prev)>=0) sel.value=prev;
+  document.getElementById('nameField').style.display=isSolo(g)?'none':'block';
   document.getElementById('memberSec').style.display=isSolo(g)?'none':'block';
   if(!document.getElementById('fMonth').value) document.getElementById('fMonth').value=clampMonth(nowYM(),g);
-
-  renderMembers(g,by,expectedPer);
-  renderGrid(g);
-  renderChart(g);
-  renderHistory(g);
+  renderMembers(g,by,expectedPer); renderGrid(g); renderChart(g); renderHistory(g);
 }
 function setChip(id,v,k,cls){ const el=document.getElementById(id); el.className='chip'+(cls?(' '+cls):''); el.querySelector('.v').textContent=v; el.querySelector('.k').textContent=k; }
-
 function renderGoalbar(){
   const bar=document.getElementById('goalbar');
-  let html=state.goals.map(g=>{
-    const {saved}=tallies(g); const pct=Math.min(100,saved/(g.target||1)*100);
-    return `<div class="gchip ${g.id===state.activeId?'active':''}" onclick="switchGoal(${g.id})">
-      <div class="gc-top"><span class="gc-emo">${g.emoji||'🎯'}</span>${esc(g.name)}</div>
-      <div class="gc-bar"><i style="width:${pct}%;background:${g.accent}"></i></div>
-      <div class="gc-pct num">${Math.round(pct)}% · ${money(saved,g.currency)}</div>
-    </div>`;
-  }).join('');
+  let html=state.goals.map(function(g){ const saved=tallies(g).saved; const pct=Math.min(100,saved/(g.target||1)*100);
+    return `<div class="gchip ${g.id===state.activeId?'active':''}" onclick="switchGoal('${g.id}')"><div class="gc-top"><span class="gc-emo">${g.emoji||'🎯'}</span>${esc(g.name)}</div><div class="gc-bar"><i style="width:${pct}%;background:${g.accent}"></i></div><div class="gc-pct num">${Math.round(pct)}% · ${money(saved,g.currency)}</div></div>`; }).join('');
   html+=`<div class="gchip add" onclick="newGoal()" title="เพิ่มเป้าหมาย"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></div>`;
   bar.innerHTML=html;
 }
-
 function renderMembers(g,by,expectedPer){
-  if(isSolo(g)) return;
-  const box=document.getElementById('members');
+  if(isSolo(g)) return; const box=document.getElementById('members');
   if(collapsed.members){ box.style.display='none'; return; } else box.style.display='block';
   const per=(g.target||0)/Math.max(1,g.members.length);
-  box.innerHTML=g.members.map((m,i)=>{
-    const saved=by[m]||0; const pct=Math.min(100,per?saved/per*100:0);
-    const done=saved>=per; const behind=saved<expectedPer*0.999;
-    const badge=done?`<span class="badge done"><span class="dot"></span>ครบแล้ว</span>`:behind?`<span class="badge behind"><span class="dot"></span>ตามอีก ${money(Math.max(0,expectedPer-saved))}</span>`:`<span class="badge ok"><span class="dot"></span>ตามเป้า</span>`;
+  box.innerHTML=g.members.map(function(m,i){ const saved=by[m]||0; const pct=Math.min(100,per?saved/per*100:0); const done=saved>=per; const behind=saved<expectedPer*0.999;
+    const badge=done?`<span class="badge done"><span class="dot"></span>ครบแล้ว</span>`:behind?`<span class="badge behind"><span class="dot"></span>ตามอีก ${money(Math.max(0,expectedPer-saved),g.currency)}</span>`:`<span class="badge ok"><span class="dot"></span>ตามเป้า</span>`;
     const c=AVA[i%AVA.length];
-    return `<div class="mcard card"><div class="mtop">
-      <div class="ava" style="color:${c};background:${hexSoft(c,0.13)}">${esc(m.slice(0,1))}</div>
-      <div class="mname">${esc(m)}</div>${badge}</div>
-      <div class="mbar"><i style="width:${pct}%;background:${c}"></i></div>
-      <div class="mmeta"><span class="s num">${money(saved)}</span><span class="g num">/ ${money(per)}</span></div></div>`;
-  }).join('');
+    return `<div class="mcard card"><div class="mtop"><div class="ava" style="color:${c};background:${hexSoft(c,0.13)}">${esc(m.slice(0,1))}</div><div class="mname">${esc(m)}</div>${badge}</div><div class="mbar"><i style="width:${pct}%;background:${c}"></i></div><div class="mmeta"><span class="s num">${money(saved,g.currency)}</span><span class="g num">/ ${money(per,g.currency)}</span></div></div>`; }).join('');
 }
-
 function renderGrid(g){
-  const box=document.getElementById('gridSec');
-  if(collapsed.gridSec){ box.style.display='none'; return; } else box.style.display='block';
-  const members=g.members&&g.members.length?g.members:["ฉัน"];
-  const months=monthsList(g);
-  const monthly=(g.target||0)/Math.max(1,members.length)/months;
-  const map={}; members.forEach(m=>map[m]={});
-  g.contributions.forEach(x=>{ if(!map[x.name])map[x.name]={}; map[x.name][x.month]=(map[x.name][x.month]||0)+(Number(x.amount)||0); });
-  const cur=nowYM();
-  let head='<tr><th>เดือน</th>'+members.map(m=>`<th>${esc(m)}</th>`).join('')+'</tr>';
-  let rows='';
-  months.forEach(ym=>{ if(ym>ymAdd(cur,1))return;
-    const cells=members.map(m=>{ const v=map[m]&&map[m][ym]?map[m][ym]:0;
-      if(v>=monthly*0.999) return `<td class="cell-paid">${CHECK}</td>`;
-      if(v>0) return `<td class="cell-partial num">${Math.round(v/1000)}k</td>`;
-      return `<td class="cell-no">·</td>`; }).join('');
-    rows+=`<tr><td>${ymLabel(ym)}</td>${cells}</tr>`; });
+  const box=document.getElementById('gridSec'); if(collapsed.gridSec){ box.style.display='none'; return; } else box.style.display='block';
+  const members=g.members&&g.members.length?g.members:["ฉัน"]; const months=monthsList(g); const monthly=(g.target||0)/Math.max(1,members.length)/months;
+  const map={}; members.forEach(function(m){map[m]={};}); (g.contributions||[]).forEach(function(x){ if(!map[x.name])map[x.name]={}; map[x.name][x.month]=(map[x.name][x.month]||0)+(Number(x.amount)||0); });
+  const cur=nowYM(); let head='<tr><th>เดือน</th>'+members.map(function(m){return `<th>${esc(m)}</th>`;}).join('')+'</tr>'; let rows='';
+  months.forEach(function(ym){ if(ym>ymAdd(cur,1))return; const cells=members.map(function(m){ const v=map[m]&&map[m][ym]?map[m][ym]:0; if(v>=monthly*0.999) return `<td class="cell-paid">${CHECK}</td>`; if(v>0) return `<td class="cell-partial num">${Math.round(v/1000)}k</td>`; return `<td class="cell-no">·</td>`; }).join(''); rows+=`<tr><td>${ymLabel(ym)}</td>${cells}</tr>`; });
   box.innerHTML=`<table><thead>${head}</thead><tbody>${rows}</tbody></table>`;
 }
-
 function renderChart(g){
-  const months=monthsList(g);
-  const map={}; g.contributions.forEach(x=>{ map[x.month]=(map[x.month]||0)+(Number(x.amount)||0); });
-  const cur=nowYM();
+  const months=monthsList(g); const map={}; (g.contributions||[]).forEach(function(x){ map[x.month]=(map[x.month]||0)+(Number(x.amount)||0); }); const cur=nowYM();
   const W=440,H=160,padL=6,padR=6,padT=10,padB=20,n=months.length,target=g.target||1;
-  const x=i=>padL+(W-padL-padR)*(i/(n-1||1));
-  const y=v=>padT+(H-padT-padB)*(1-v/target);
+  const x=function(i){return padL+(W-padL-padR)*(i/(n-1||1));}; const y=function(v){return padT+(H-padT-padB)*(1-v/target);};
   let tgt=''; for(let i=0;i<n;i++){ const v=target*(i+1)/n; tgt+=(i?'L':'M')+x(i).toFixed(1)+' '+y(v).toFixed(1)+' '; }
-  let cum=0,act='',lastI=-1;
-  for(let i=0;i<n;i++){ if(months[i]>cur)break; cum+=map[months[i]]||0; act+=(i?'L':'M')+x(i).toFixed(1)+' '+y(cum).toFixed(1)+' '; lastI=i; }
+  let cum=0,act='',lastI=-1; for(let i=0;i<n;i++){ if(months[i]>cur)break; cum+=map[months[i]]||0; act+=(i?'L':'M')+x(i).toFixed(1)+' '+y(cum).toFixed(1)+' '; lastI=i; }
   const dot=lastI>=0?`<circle cx="${x(lastI).toFixed(1)}" cy="${y(cum).toFixed(1)}" r="4" fill="#fff" stroke="${g.accent}" stroke-width="2.5"/>`:'';
   const area=lastI>=0?`<path d="${act}L ${x(lastI).toFixed(1)} ${(H-padB).toFixed(1)} L ${x(0).toFixed(1)} ${(H-padB).toFixed(1)} Z" fill="url(#ag)"/>`:'';
-  const lab=i=>`<text x="${x(i).toFixed(1)}" y="${H-5}" font-size="10" fill="#94a3b8" text-anchor="middle">${ymLabel(months[i])}</text>`;
+  const lab=function(i){return `<text x="${x(i).toFixed(1)}" y="${H-5}" font-size="10" fill="#94a3b8" text-anchor="middle">${ymLabel(months[i])}</text>`;};
   const labels=lab(0)+lab(Math.floor((n-1)/2))+`<text x="${x(n-1).toFixed(1)}" y="${H-5}" font-size="10" fill="#94a3b8" text-anchor="end">${ymLabel(months[n-1])}</text>`;
   const baseline=`<line x1="${padL}" y1="${(H-padB).toFixed(1)}" x2="${W-padR}" y2="${(H-padB).toFixed(1)}" stroke="#eef1f4" stroke-width="1"/>`;
-  document.getElementById('chart').innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="100%" style="display:block">
-    <defs><linearGradient id="ag" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${g.accent}" stop-opacity=".16"/><stop offset="1" stop-color="${g.accent}" stop-opacity="0"/></linearGradient></defs>
-    ${baseline}${area}<path d="${tgt}" fill="none" stroke="#cbd5e1" stroke-width="1.8" stroke-dasharray="5 5"/>
-    <path d="${act}" fill="none" stroke="${g.accent}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>${dot}${labels}</svg>`;
+  document.getElementById('chart').innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="100%" style="display:block"><defs><linearGradient id="ag" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${g.accent}" stop-opacity=".16"/><stop offset="1" stop-color="${g.accent}" stop-opacity="0"/></linearGradient></defs>${baseline}${area}<path d="${tgt}" fill="none" stroke="#cbd5e1" stroke-width="1.8" stroke-dasharray="5 5"/><path d="${act}" fill="none" stroke="${g.accent}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>${dot}${labels}</svg>`;
 }
-
 function renderHistory(g){
-  const box=document.getElementById('history');
-  const items=[...g.contributions].sort((a,b)=>(b.month.localeCompare(a.month))||(b.id-a.id)).slice(0,12);
+  const box=document.getElementById('history'); const items=(g.contributions||[]).slice().sort(function(a,b){return (b.month.localeCompare(a.month))||(String(b.id).localeCompare(String(a.id)));}).slice(0,15);
   if(!items.length){ box.innerHTML='<div class="empty">ยังไม่มีรายการ — เริ่มบันทึกได้เลย</div>'; return; }
-  box.innerHTML=items.map(x=>{ const c=AVA[((g.members||[]).indexOf(x.name)+1+AVA.length)%AVA.length]||'#94a3b8';
-    return `<div class="hrow card"><div class="htop">
-    <div class="ava" style="color:${c};background:${hexSoft(c,0.13)}">${esc((x.name||'?').slice(0,1))}</div>
-    <div style="flex:1;min-width:0"><div style="font-weight:600;font-size:14px">${esc(x.name)} <span style="color:var(--muted);font-weight:500;font-size:12px">· ${ymLabel(x.month)}</span></div>
-    <div style="color:var(--muted);font-size:12px">${esc(x.note||'')}</div></div>
-    <div class="num" style="font-weight:700;color:var(--green)">${money(x.amount)}</div>
-    <button class="del" onclick="delItem(${x.id})" style="margin-left:8px;font-size:15px">✕</button></div></div>`; }).join('');
+  box.innerHTML=items.map(function(x){ const c=AVA[((g.members||[]).indexOf(x.name)+1+AVA.length)%AVA.length]||'#94a3b8'; const slip=x.slip_url?` · <a href="${esc(x.slip_url)}" target="_blank" style="color:var(--accent);text-decoration:none">สลิป</a>`:'';
+    return `<div class="hrow card"><div class="htop"><div class="ava" style="color:${c};background:${hexSoft(c,0.13)}">${esc((x.name||'?').slice(0,1))}</div><div style="flex:1;min-width:0"><div style="font-weight:600;font-size:14px">${esc(x.name)} <span style="color:var(--muted);font-weight:500;font-size:12px">· ${ymLabel(x.month)}</span></div><div style="color:var(--muted);font-size:12px">${esc(x.note||'')}${slip}</div></div><div class="num" style="font-weight:700;color:var(--green)">${money(x.amount,g.currency)}</div><button class="del" onclick="delItem('${x.id}')" style="margin-left:8px;font-size:15px">✕</button></div></div>`; }).join('');
 }
 
-function addContribution(){
-  const g=activeGoal();
+/* ===== mutations ===== */
+async function addContribution(){
+  if(working) return; const g=activeGoal(); if(!g) return;
   const name=isSolo(g)?(g.members[0]||"ฉัน"):document.getElementById('fName').value;
   const month=document.getElementById('fMonth').value||nowYM();
   const amount=parseFloat(document.getElementById('fAmount').value);
   const note=document.getElementById('fNote').value.trim();
   if(!amount||amount<=0){ alert('ใส่จำนวนเงินให้ถูกต้อง'); return; }
-  const slipEl=document.getElementById('fSlip');
-  const slip=slipEl&&slipEl.files&&slipEl.files[0]?slipEl.files[0]:null;
-  const id=(g.contributions.reduce((m,x)=>Math.max(m,x.id||0),0))+1;
-  g.contributions.push({id,month,name,amount,note,hasSlip:!!slip});
-  document.getElementById('fAmount').value=''; document.getElementById('fNote').value='';
-  save(); render();
-  notifyDiscord(g,{name,month,amount,note},slip);
-  if(slipEl) slipEl.value='';
+  const slipEl=document.getElementById('fSlip'); const slip=slipEl&&slipEl.files&&slipEl.files[0]?slipEl.files[0]:null;
+  busy(true);
+  try{
+    let slip_url='';
+    if(slip){ const safe=(slip.name||'slip.png').replace(/[^\w.\-]/g,'_'); const path=g.id+'/'+Date.now()+'_'+safe; const up=await sb.storage.from('slips').upload(path,slip,{cacheControl:'3600',upsert:false}); if(up.error){ flash('อัปสลิปไม่ได้ '+up.error.message); } else { slip_url=sb.storage.from('slips').getPublicUrl(path).data.publicUrl; } }
+    const ins=await sb.from('contributions').insert({goal_id:g.id,name:name,month:month,amount:amount,note:note,slip_url:slip_url}).select().single();
+    if(ins.error) throw ins.error;
+    document.getElementById('fAmount').value=''; document.getElementById('fNote').value=''; if(slipEl) slipEl.value='';
+    await loadAll();
+    notifyDiscord(g,{name:name,month:month,amount:amount,note:note},slip_url);
+    flash('บันทึกแล้ว ✓');
+  }catch(e){ alert('บันทึกไม่สำเร็จ: '+(e.message||e)); }
+  busy(false);
 }
-function delItem(id){ if(!confirm('ลบรายการนี้?'))return; const g=activeGoal(); g.contributions=g.contributions.filter(x=>x.id!==id); save(); render(); }
+async function delItem(id){ if(!confirm('ลบรายการนี้?'))return; busy(true); try{ const r=await sb.from('contributions').delete().eq('id',id); if(r.error)throw r.error; await loadAll(); }catch(e){ alert('ลบไม่สำเร็จ: '+(e.message||e)); } busy(false); }
 function toggle(key){ collapsed[key]=!collapsed[key]; const b=document.getElementById(key==='members'?'tgMembers':'tgGrid'); if(b)b.textContent=collapsed[key]?'แสดง':'ย่อ'; render(); }
-function switchGoal(id){ state.activeId=id; save(); collapsed={members:false,gridSec:false}; document.getElementById('fMonth').value=''; render(); window.scrollTo({top:0,behavior:'smooth'}); }
+function switchGoal(id){ state.activeId=id; collapsed={members:false,gridSec:false}; document.getElementById('fMonth').value=''; render(); window.scrollTo({top:0,behavior:'smooth'}); }
 
+/* ===== editor ===== */
 function buildEditorChrome(){
-  document.getElementById('swatches').innerHTML=ACCENTS.map(c=>`<div class="sw" data-c="${c}" style="background:${c}" onclick="pickAccent('${c}')"></div>`).join('');
-  document.getElementById('emoPresets').innerHTML=EMOS.map(e=>`<button onclick="document.getElementById('gEmo').value='${e}'">${e}</button>`).join('');
+  document.getElementById('swatches').innerHTML=ACCENTS.map(function(c){return `<div class="sw" data-c="${c}" style="background:${c}" onclick="pickAccent('${c}')"></div>`;}).join('');
+  document.getElementById('emoPresets').innerHTML=EMOS.map(function(e){return `<button type="button" onclick="document.getElementById('gEmo').value='${e}'">${e}</button>`;}).join('');
 }
+function pickAccent(c){ editAccent=c; const sws=document.querySelectorAll('#swatches .sw'); for(let i=0;i<sws.length;i++) sws[i].classList.toggle('sel',sws[i].dataset.c===c); }
+function setMode(m){ editMode=m; document.getElementById('segGroup').classList.toggle('on',m==='group'); document.getElementById('segSolo').classList.toggle('on',m==='solo'); document.getElementById('membersField').style.display=m==='solo'?'none':'block'; }
+function newGoal(){
+  editingId=null; document.getElementById('goalEditTitle').textContent='เป้าหมายใหม่'; document.getElementById('delGoalBtn').style.display='none';
+  document.getElementById('gEmo').value='🎯'; document.getElementById('gName2').value=''; document.getElementById('gTarget').value=''; document.getElementById('gCur').value='฿';
+  const s=nowYM(); document.getElementById('gStart').value=s; document.getElementById('gEnd').value=ymAdd(s,11);
+  editAccent=ACCENTS[0]; pickAccent(editAccent); editorMembers=new Set(); renderPeoplePicker(); setMode('group'); showModal('mGoal');
+}
+function editGoal(){
+  const g=activeGoal(); if(!g){ newGoal(); return; } editingId=g.id;
+  document.getElementById('goalEditTitle').textContent='แก้ไขเป้าหมาย'; document.getElementById('delGoalBtn').style.display='inline';
+  document.getElementById('gEmo').value=g.emoji||'🎯'; document.getElementById('gName2').value=g.name; document.getElementById('gTarget').value=g.target; document.getElementById('gCur').value=g.currency||'฿';
+  document.getElementById('gStart').value=g.start; document.getElementById('gEnd').value=g.end;
+  editAccent=g.accent||ACCENTS[0]; pickAccent(editAccent);
+  editorMembers=new Set((g.members||[]).filter(function(m){return m!=='ฉัน';})); renderPeoplePicker(); setMode(isSolo(g)?'solo':'group'); showModal('mGoal');
+}
+async function saveGoal(){
+  if(working) return;
+  const name=document.getElementById('gName2').value.trim()||'เป้าหมายของฉัน';
+  const target=Math.max(1,parseInt(document.getElementById('gTarget').value)||10000);
+  const start=document.getElementById('gStart').value||nowYM(); let end=document.getElementById('gEnd').value||ymAdd(start,11); if(end<start) end=start;
+  let members=editMode==='solo'?["ฉัน"]:[].concat(Array.from(editorMembers)); if(!members.length) members=["ฉัน"];
+  const emoji=document.getElementById('gEmo').value.trim()||'🎯'; const currency=document.getElementById('gCur').value.trim()||'฿';
+  const row={name:name,emoji:emoji,accent:editAccent,currency:currency,target:target,start_month:start,end_month:end,members:members};
+  busy(true);
+  try{
+    if(editingId){ const r=await sb.from('goals').update(row).eq('id',editingId); if(r.error)throw r.error; }
+    else{ const r=await sb.from('goals').insert(row).select().single(); if(r.error)throw r.error; state.activeId=r.data.id; }
+    closeModal('mGoal'); collapsed={members:false,gridSec:false}; await loadAll();
+  }catch(e){ alert('บันทึกเป้าไม่สำเร็จ: '+(e.message||e)); }
+  busy(false);
+}
+async function deleteGoal(){
+  if(!confirm('ลบเป้าหมายนี้และข้อมูลทั้งหมด?'))return; busy(true);
+  try{ const r=await sb.from('goals').delete().eq('id',editingId); if(r.error)throw r.error; state.activeId=null; closeModal('mGoal'); await loadAll(); }
+  catch(e){ alert('ลบไม่สำเร็จ: '+(e.message||e)); } busy(false);
+}
+
+/* ===== people ===== */
 function renderPeoplePicker(){
-  const box=document.getElementById('peoplePick'); if(!box) return;
-  const ppl=state.people||[];
+  const box=document.getElementById('peoplePick'); if(!box) return; const ppl=state.people||[];
   if(!ppl.length){ box.innerHTML='<div class="pp-empty">ยังไม่มีรายชื่อ — กดปุ่มด้านล่างเพื่อเพิ่มคน</div>'; return; }
-  box.innerHTML=ppl.map(function(p){ const sel=editorMembers.has(p.nick);
-    return `<span class="pp ${sel?'on':''}" onclick="togglePerson(${p.id})">${sel?'✓ ':''}${esc(p.nick)}${p.real?(' · '+esc(p.real)):''}</span>`; }).join('');
+  box.innerHTML=ppl.map(function(p){ const sel=editorMembers.has(p.nick); return `<span class="pp ${sel?'on':''}" onclick="togglePerson('${p.id}')">${sel?'✓ ':''}${esc(p.nick)}${p.real?(' · '+esc(p.real)):''}</span>`; }).join('');
 }
 function renderPeopleList(){
-  const box=document.getElementById('peopleManageList'); if(!box) return;
-  const ppl=state.people||[];
+  const box=document.getElementById('peopleManageList'); if(!box) return; const ppl=state.people||[];
   if(!ppl.length){ box.innerHTML='<div class="pp-empty">ยังไม่มีรายชื่อ — เพิ่มด้านล่างได้เลย</div>'; return; }
-  box.innerHTML=ppl.map(function(p){
-    return `<div class="prow"><div class="prow-info"><div class="prow-nick">${esc(p.nick)}</div><div class="prow-real">${p.real?esc(p.real):'ยังไม่ใส่ชื่อจริง'}</div></div><button class="prow-btn" onclick="editPersonReal(${p.id})">แก้</button><button class="prow-btn del" onclick="removePerson(${p.id})">ลบ</button></div>`;
-  }).join('');
+  box.innerHTML=ppl.map(function(p){ return `<div class="prow"><div class="prow-info"><div class="prow-nick">${esc(p.nick)}</div><div class="prow-real">${p.real?esc(p.real):'ยังไม่ใส่ชื่อจริง'}</div></div><button class="prow-btn" onclick="editPersonReal('${p.id}')">แก้</button><button class="prow-btn del" onclick="removePerson('${p.id}')">ลบ</button></div>`; }).join('');
 }
 function renderPeopleAll(){ if(document.getElementById('peoplePick')) renderPeoplePicker(); if(document.getElementById('peopleManageList')) renderPeopleList(); }
 function openPeople(){ renderPeopleList(); showModal('mPeople'); }
 function togglePerson(id){ const p=(state.people||[]).find(function(x){return x.id===id;}); if(!p)return; if(editorMembers.has(p.nick)) editorMembers.delete(p.nick); else editorMembers.add(p.nick); renderPeoplePicker(); }
-function removePerson(id){ const p=(state.people||[]).find(function(x){return x.id===id;}); if(!p)return; if(!confirm('ลบ "'+p.nick+'" ออกจากรายชื่อ?'))return; state.people=(state.people||[]).filter(function(x){return x.id!==id;}); editorMembers.delete(p.nick); save(); renderPeopleAll(); }
-function editPersonReal(id){ const p=(state.people||[]).find(function(x){return x.id===id;}); if(!p)return; const r=prompt('ชื่อจริงของ "'+p.nick+'" (ตามสลิป)', p.real||''); if(r===null)return; p.real=r.trim(); save(); renderPeopleAll(); }
-function addPersonCore(nick,real,selectIt){ nick=(nick||'').trim(); real=(real||'').trim(); if(!nick){ alert('ใส่ชื่อเล่นก่อน'); return false; } if(!state.people) state.people=[]; if(state.people.some(function(p){return p.nick===nick;})){ alert('มีชื่อเล่นนี้แล้ว'); return false; } const id=(state.people.reduce(function(m,p){return Math.max(m,p.id||0);},0))+1; state.people.push({id:id,nick:nick,real:real}); if(selectIt) editorMembers.add(nick); save(); renderPeopleAll(); return true; }
-function addPersonFromManager(){ if(addPersonCore(document.getElementById('mpNick').value,document.getElementById('mpReal').value,false)){ document.getElementById('mpNick').value=''; document.getElementById('mpReal').value=''; } }
-function pickAccent(c){ editAccent=c; document.querySelectorAll('#swatches .sw').forEach(s=>s.classList.toggle('sel',s.dataset.c===c)); }
-function setMode(m){ editMode=m; document.getElementById('segGroup').classList.toggle('on',m==='group'); document.getElementById('segSolo').classList.toggle('on',m==='solo'); document.getElementById('membersField').style.display=m==='solo'?'none':'block'; }
+async function removePerson(id){ const p=(state.people||[]).find(function(x){return x.id===id;}); if(!p)return; if(!confirm('ลบ "'+p.nick+'" ออกจากรายชื่อ?'))return; editorMembers.delete(p.nick); busy(true); try{ const r=await sb.from('people').delete().eq('id',id); if(r.error)throw r.error; await loadAll(); renderPeopleAll(); }catch(e){ alert('ลบไม่สำเร็จ: '+(e.message||e)); } busy(false); }
+async function editPersonReal(id){ const p=(state.people||[]).find(function(x){return x.id===id;}); if(!p)return; const r=prompt('ชื่อจริงของ "'+p.nick+'" (ตามสลิป)',p.real||''); if(r===null)return; busy(true); try{ const u=await sb.from('people').update({real:r.trim()}).eq('id',id); if(u.error)throw u.error; await loadAll(); renderPeopleAll(); }catch(e){ alert('แก้ไม่สำเร็จ: '+(e.message||e)); } busy(false); }
+async function addPersonCore(nick,real,selectIt){
+  nick=(nick||'').trim(); real=(real||'').trim();
+  if(!nick){ alert('ใส่ชื่อเล่นก่อน'); return false; }
+  if((state.people||[]).some(function(p){return p.nick===nick;})){ alert('มีชื่อเล่นนี้แล้ว'); return false; }
+  busy(true);
+  try{ const r=await sb.from('people').insert({nick:nick,real:real}).select().single(); if(r.error)throw r.error; if(selectIt) editorMembers.add(nick); await loadAll(); renderPeopleAll(); }
+  catch(e){ alert('เพิ่มไม่สำเร็จ: '+(e.message||e)); busy(false); return false; }
+  busy(false); return true;
+}
+function addPersonFromManager(){ const ok=addPersonCore(document.getElementById('mpNick').value,document.getElementById('mpReal').value,false); Promise.resolve(ok).then(function(v){ if(v!==false){ document.getElementById('mpNick').value=''; document.getElementById('mpReal').value=''; } }); }
 
-function newGoal(){
-  editingId=null; document.getElementById('goalEditTitle').textContent='เป้าหมายใหม่';
-  document.getElementById('delGoalBtn').style.display='none';
-  document.getElementById('gEmo').value='🎯'; document.getElementById('gName2').value='';
-  document.getElementById('gTarget').value=''; document.getElementById('gCur').value='฿';
-  const s=nowYM(); document.getElementById('gStart').value=s; document.getElementById('gEnd').value=ymAdd(s,11);
-  editAccent=ACCENTS[0]; pickAccent(editAccent); editorMembers=new Set(); renderPeoplePicker(); setMode('group');
-  showModal('mGoal');
-}
-function editGoal(){
-  const g=activeGoal(); if(!g){ newGoal(); return; } editingId=g.id;
-  document.getElementById('goalEditTitle').textContent='แก้ไขเป้าหมาย';
-  document.getElementById('delGoalBtn').style.display='inline';
-  document.getElementById('gEmo').value=g.emoji||'🎯'; document.getElementById('gName2').value=g.name;
-  document.getElementById('gTarget').value=g.target; document.getElementById('gCur').value=g.currency||'฿';
-  document.getElementById('gStart').value=g.start; document.getElementById('gEnd').value=g.end;
-  (g.members||[]).forEach(function(nick){ if(nick==='ฉัน')return; if(!(state.people||[]).some(function(p){return p.nick===nick;})){ if(!state.people)state.people=[]; const pid=(state.people.reduce(function(m,p){return Math.max(m,p.id||0);},0))+1; state.people.push({id:pid,nick:nick,real:(g.realNames&&g.realNames[nick])||''}); } });
-  editorMembers=new Set((g.members||[]).filter(function(m){return m!=='ฉัน';})); renderPeoplePicker();
-  editAccent=g.accent||ACCENTS[0]; pickAccent(editAccent); setMode(isSolo(g)?'solo':'group');
-  showModal('mGoal');
-}
-function saveGoal(){
-  const name=document.getElementById('gName2').value.trim()||'เป้าหมายของฉัน';
-  const target=Math.max(1,parseInt(document.getElementById('gTarget').value)||10000);
-  const start=document.getElementById('gStart').value||nowYM();
-  let end=document.getElementById('gEnd').value||ymAdd(start,11);
-  if(end<start) end=start;
-  let realNames={}; let members;
-  if(editMode==='solo'){ members=["ฉัน"]; }
-  else{ members=[...editorMembers]; if(!members.length) members=["ฉัน"]; members.forEach(function(nick){ const p=(state.people||[]).find(function(x){return x.nick===nick;}); if(p&&p.real) realNames[nick]=p.real; }); }
-  const emoji=document.getElementById('gEmo').value.trim()||'🎯';
-  const currency=document.getElementById('gCur').value.trim()||'฿';
-  if(editingId){ const g=state.goals.find(x=>x.id===editingId); Object.assign(g,{name,target,start,end,members,emoji,currency,accent:editAccent,realNames}); }
-  else{ const id=(state.goals.reduce((m,x)=>Math.max(m,x.id||0),0))+1; state.goals.push({id,name,target,start,end,members,emoji,currency,accent:editAccent,realNames,sheetCsvUrl:"",contributions:[]}); state.activeId=id; }
-  save(); closeModal('mGoal'); collapsed={members:false,gridSec:false}; render();
-}
-function deleteGoal(){
-  if(!confirm('ลบเป้าหมายนี้และข้อมูลทั้งหมด?'))return;
-  state.goals=state.goals.filter(g=>g.id!==editingId); state.activeId=state.goals[0]?state.goals[0].id:null; save(); closeModal('mGoal'); render();
-}
-
-function openShare(){ const g=activeGoal(); document.getElementById('sSheet').value=g?(g.sheetCsvUrl||''):''; document.getElementById('dWebhook').value=state.discord||''; showModal('mShare'); }
-function saveDiscord(){ state.discord=document.getElementById('dWebhook').value.trim(); save(); flash(state.discord?'เชื่อม Discord แล้ว ✓':'ลบ Webhook แล้ว'); }
-function saveSheetUrl(){
-  const url=document.getElementById('sSheet').value.trim(); const g=activeGoal(); g.sheetCsvUrl=url; save();
-  if(url) fetchSheet(g,url).then(()=>{ closeModal('mShare'); render(); }).catch(e=>alert('ดึงข้อมูลไม่ได้: '+e.message));
-  else closeModal('mShare');
-}
-async function fetchSheet(g,url){
-  const res=await fetch(url); if(!res.ok) throw new Error('HTTP '+res.status);
-  const rows=parseCSV(await res.text()); if(!rows.length) throw new Error('ไฟล์ว่าง');
-  const head=rows[0].map(h=>h.trim().toLowerCase());
-  const iD=head.indexOf('date'),iN=head.indexOf('name'),iA=head.indexOf('amount'),iNo=head.indexOf('note');
-  const out=[]; let id=1;
-  for(let r=1;r<rows.length;r++){ const row=rows[r]; if(!row||!row[iN])continue;
-    let month=(row[iD]||'').slice(0,7); if(month.length<7) month=nowYM();
-    out.push({id:id++,month,name:(row[iN]||'').trim(),amount:parseFloat((row[iA]||'0').replace(/[^0-9.\-]/g,''))||0,note:(iNo>=0?row[iNo]:'')||''}); }
-  g.contributions=out; save(); flash('ดึงข้อมูลจาก Google Sheet แล้ว');
-}
-function parseCSV(text){ const rows=[]; let row=[],cur='',q=false;
-  for(let i=0;i<text.length;i++){ const ch=text[i];
-    if(q){ if(ch==='"'){ if(text[i+1]==='"'){cur+='"';i++;} else q=false; } else cur+=ch; }
-    else { if(ch==='"')q=true; else if(ch===','){row.push(cur);cur='';} else if(ch==='\n'){row.push(cur);rows.push(row);row=[];cur='';} else if(ch==='\r'){} else cur+=ch; } }
-  if(cur.length||row.length){ row.push(cur); rows.push(row); }
-  return rows.filter(r=>r.some(c=>c&&c.trim()!==''));
-}
-function exportJSON(){ const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
-  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='my-savings-goals.json'; a.click(); URL.revokeObjectURL(a.href); flash('เซฟไฟล์แล้ว'); }
-function importJSON(ev){ const f=ev.target.files[0]; if(!f)return; const r=new FileReader();
-  r.onload=()=>{ try{ const s=JSON.parse(r.result); if(!s.goals||!s.goals.length) throw 0; state=s; if(!state.activeId)state.activeId=state.goals[0].id; save(); closeModal('mShare'); render(); flash('โหลดไฟล์สำเร็จ'); }catch(e){ alert('ไฟล์ไม่ถูกต้อง'); } };
-  r.readAsText(f); }
-
-async function notifyDiscord(g,c,slip){
-  const url=state.discord; if(!url||!g) return;
-  const {saved}=tallies(g); const target=g.target||1; const pct=Math.round(saved/target*100);
+/* ===== share / discord ===== */
+function openShare(){ document.getElementById('dWebhook').value=localStorage.getItem(WEBHOOK_KEY)||''; showModal('mShare'); }
+function saveDiscord(){ const u=document.getElementById('dWebhook').value.trim(); if(u) localStorage.setItem(WEBHOOK_KEY,u); else localStorage.removeItem(WEBHOOK_KEY); flash(u?'บันทึก Discord แล้ว ✓':'ลบ Webhook แล้ว'); }
+async function notifyDiscord(g,c,slipUrl){
+  const url=localStorage.getItem(WEBHOOK_KEY); if(!url) return;
+  const saved=tallies(g).saved; const target=g.target||1; const pct=Math.round(saved/target*100);
   let color=24432; try{ color=parseInt((g.accent||'#059669').replace('#',''),16); }catch(e){}
-  const real=(g.realNames&&g.realNames[c.name])||''; const disp=real||c.name;
-  const embed={ title:`✅ ${disp} โอนแล้ว ${money(c.amount,g.currency)}`, color:color,
-    description:`${g.emoji||'🎯'} ${g.name} · งวด ${ymLabel(c.month)}${real?(' · ชื่อเล่น '+c.name):''}${c.note?(' · '+c.note):''}`,
-    fields:[{name:'ยอดสะสมตอนนี้',value:`${money(saved,g.currency)} / ${money(target,g.currency)} (${pct}%)`}],
+  const real=realOf(c.name); const disp=real||c.name;
+  const embed={ title:'✅ '+disp+' โอนแล้ว '+money(c.amount,g.currency), color:color,
+    description:(g.emoji||'🎯')+' '+g.name+' · งวด '+ymLabel(c.month)+(real?(' · ชื่อเล่น '+c.name):'')+(c.note?(' · '+c.note):''),
+    fields:[{name:'ยอดสะสมตอนนี้',value:money(saved,g.currency)+' / '+money(target,g.currency)+' ('+pct+'%)'}],
     footer:{text:'เป้าเงิน'}, timestamp:new Date().toISOString() };
-  const payload={ username:'เป้าเงิน', embeds:[embed] };
-  try{
-    if(slip){ const fd=new FormData(); fd.append('payload_json',JSON.stringify(payload)); fd.append('files[0]',slip,slip.name||'slip.png'); await fetch(url,{method:'POST',body:fd}); }
-    else { await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}); }
-    flash('แจ้งเข้า Discord แล้ว ✓');
-  }catch(e){ flash('ส่ง Discord ไม่ได้ — เช็กลิงก์ Webhook'); }
+  if(slipUrl) embed.image={url:slipUrl};
+  try{ await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:'เป้าเงิน',embeds:[embed]})}); }catch(e){}
 }
 
-function esc(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-function clampMonth(ym,g){ const min=g.start,max=g.end; return ym<min?min:(ym>max?max:ym); }
-function showModal(id){ document.getElementById(id).classList.add('show'); }
-function closeModal(id){ document.getElementById(id).classList.remove('show'); }
-document.querySelectorAll('.modal').forEach(m=>m.addEventListener('click',e=>{ if(e.target===m) m.classList.remove('show'); }));
+document.querySelectorAll('.modal').forEach(function(m){ m.addEventListener('click',function(e){ if(e.target===m) m.classList.remove('show'); }); });
+document.getElementById('gatePw').addEventListener('keydown',function(e){ if(e.key==='Enter') doLogin(); });
 
-buildEditorChrome();
-(function init(){ const g=activeGoal(); if(g&&g.sheetCsvUrl){ fetchSheet(g,g.sheetCsvUrl).catch(()=>{}).finally(render); } else render(); })();
+init();
 </script>
 </body>
 </html>
