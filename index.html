@@ -144,6 +144,13 @@
   .pp-empty{font-size:12.5px;color:var(--muted);padding:4px 0}
   .addp{display:flex;gap:8px;align-items:stretch}
   .addp input{flex:1;min-width:0}
+  .prow{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;margin-bottom:8px}
+  .prow-info{flex:1;min-width:0}
+  .prow-nick{font-weight:700;font-size:14px;color:var(--ink)}
+  .prow-real{font-size:12.5px;color:var(--muted);margin-top:1px}
+  .prow-btn{border:1px solid var(--line);background:#fff;border-radius:9px;padding:7px 11px;font-family:inherit;font-size:12.5px;font-weight:600;color:var(--ink2);cursor:pointer}
+  .prow-btn.del{color:var(--rose)}
+  .linkbtn{background:none;border:none;color:var(--accent);font-weight:600;font-size:13px;font-family:inherit;cursor:pointer;padding:6px 2px}
 </style>
 </head>
 <body>
@@ -153,9 +160,12 @@
       <span class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-5 4 4 8-8"/><path d="M16 8h5v5"/></svg></span>
       เป้าเงิน
     </div>
+    <div style="display:flex;gap:8px">
+    <button class="iconbtn" onclick="openPeople()" aria-label="รายชื่อคน"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></button>
     <button class="iconbtn" onclick="editGoal()" aria-label="ตั้งค่าเป้า">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
     </button>
+    </div>
   </header>
 
   <div id="dash">
@@ -294,17 +304,29 @@
     <div class="field" id="membersField">
       <label>เลือกสมาชิกที่ร่วมเป้านี้ (แตะชื่อเพื่อเลือก/เอาออก)</label>
       <div id="peoplePick" class="people-pick"></div>
-      <div class="addp">
-        <input type="text" id="pNick" placeholder="ชื่อเล่น">
-        <input type="text" id="pReal" placeholder="ชื่อจริง (ตามสลิป)">
-        <button type="button" class="btn soft" style="width:auto;padding:0 14px;flex:0 0 auto" onclick="addPersonFromInputs()">+ เพิ่มคน</button>
-      </div>
+      <button type="button" class="linkbtn" onclick="openPeople()">+ เพิ่ม / จัดการรายชื่อคน</button>
     </div>
     <div class="field"><label>สีธีม</label><div class="swatches" id="swatches"></div></div>
     <button class="btn primary" onclick="saveGoal()">บันทึกเป้าหมาย</button>
     <div style="height:8px"></div>
     <button class="btn soft" onclick="closeModal('mGoal')">ยกเลิก</button>
     <div style="height:14px;text-align:center"><button class="del" id="delGoalBtn" onclick="deleteGoal()" style="display:none">ลบเป้าหมายนี้</button></div>
+  </div>
+</div>
+
+<div class="modal" id="mPeople">
+  <div class="sheet">
+    <div class="grab"></div>
+    <h3>รายชื่อคน</h3>
+    <p class="sub">เพิ่มคนไว้ครั้งเดียว เวลาสร้างเป้าก็แตะเลือกได้เลย · ชื่อจริงจะใช้ตอนแจ้ง Discord ตามสลิป</p>
+    <div id="peopleManageList"></div>
+    <div class="addp" style="margin-top:6px">
+      <input type="text" id="mpNick" placeholder="ชื่อเล่น">
+      <input type="text" id="mpReal" placeholder="ชื่อจริง (ตามสลิป)">
+      <button type="button" class="btn soft" style="width:auto;padding:0 14px;flex:0 0 auto" onclick="addPersonFromManager()">+ เพิ่ม</button>
+    </div>
+    <div style="height:14px"></div>
+    <button class="btn primary" onclick="closeModal('mPeople')">เสร็จแล้ว</button>
   </div>
 </div>
 
@@ -555,13 +577,25 @@ function buildEditorChrome(){
 function renderPeoplePicker(){
   const box=document.getElementById('peoplePick'); if(!box) return;
   const ppl=state.people||[];
-  if(!ppl.length){ box.innerHTML='<div class="pp-empty">ยังไม่มีรายชื่อ — เพิ่มคนด้านล่างได้เลย</div>'; return; }
+  if(!ppl.length){ box.innerHTML='<div class="pp-empty">ยังไม่มีรายชื่อ — กดปุ่มด้านล่างเพื่อเพิ่มคน</div>'; return; }
   box.innerHTML=ppl.map(function(p){ const sel=editorMembers.has(p.nick);
-    return `<span class="pp ${sel?'on':''}" onclick="togglePerson(${p.id})">${sel?'✓ ':''}${esc(p.nick)}${p.real?(' · '+esc(p.real)):''}<b class="pp-x" onclick="event.stopPropagation();removePerson(${p.id})">✕</b></span>`; }).join('');
+    return `<span class="pp ${sel?'on':''}" onclick="togglePerson(${p.id})">${sel?'✓ ':''}${esc(p.nick)}${p.real?(' · '+esc(p.real)):''}</span>`; }).join('');
 }
+function renderPeopleList(){
+  const box=document.getElementById('peopleManageList'); if(!box) return;
+  const ppl=state.people||[];
+  if(!ppl.length){ box.innerHTML='<div class="pp-empty">ยังไม่มีรายชื่อ — เพิ่มด้านล่างได้เลย</div>'; return; }
+  box.innerHTML=ppl.map(function(p){
+    return `<div class="prow"><div class="prow-info"><div class="prow-nick">${esc(p.nick)}</div><div class="prow-real">${p.real?esc(p.real):'ยังไม่ใส่ชื่อจริง'}</div></div><button class="prow-btn" onclick="editPersonReal(${p.id})">แก้</button><button class="prow-btn del" onclick="removePerson(${p.id})">ลบ</button></div>`;
+  }).join('');
+}
+function renderPeopleAll(){ if(document.getElementById('peoplePick')) renderPeoplePicker(); if(document.getElementById('peopleManageList')) renderPeopleList(); }
+function openPeople(){ renderPeopleList(); showModal('mPeople'); }
 function togglePerson(id){ const p=(state.people||[]).find(function(x){return x.id===id;}); if(!p)return; if(editorMembers.has(p.nick)) editorMembers.delete(p.nick); else editorMembers.add(p.nick); renderPeoplePicker(); }
-function removePerson(id){ const p=(state.people||[]).find(function(x){return x.id===id;}); if(!p)return; if(!confirm('ลบ "'+p.nick+'" ออกจากรายชื่อ?'))return; state.people=(state.people||[]).filter(function(x){return x.id!==id;}); editorMembers.delete(p.nick); save(); renderPeoplePicker(); }
-function addPersonFromInputs(){ const nick=document.getElementById('pNick').value.trim(); const real=document.getElementById('pReal').value.trim(); if(!nick){ alert('ใส่ชื่อเล่นก่อน'); return; } if(!state.people) state.people=[]; if(state.people.some(function(p){return p.nick===nick;})){ alert('มีชื่อเล่นนี้แล้ว'); return; } const id=(state.people.reduce(function(m,p){return Math.max(m,p.id||0);},0))+1; state.people.push({id:id,nick:nick,real:real}); editorMembers.add(nick); document.getElementById('pNick').value=''; document.getElementById('pReal').value=''; save(); renderPeoplePicker(); }
+function removePerson(id){ const p=(state.people||[]).find(function(x){return x.id===id;}); if(!p)return; if(!confirm('ลบ "'+p.nick+'" ออกจากรายชื่อ?'))return; state.people=(state.people||[]).filter(function(x){return x.id!==id;}); editorMembers.delete(p.nick); save(); renderPeopleAll(); }
+function editPersonReal(id){ const p=(state.people||[]).find(function(x){return x.id===id;}); if(!p)return; const r=prompt('ชื่อจริงของ "'+p.nick+'" (ตามสลิป)', p.real||''); if(r===null)return; p.real=r.trim(); save(); renderPeopleAll(); }
+function addPersonCore(nick,real,selectIt){ nick=(nick||'').trim(); real=(real||'').trim(); if(!nick){ alert('ใส่ชื่อเล่นก่อน'); return false; } if(!state.people) state.people=[]; if(state.people.some(function(p){return p.nick===nick;})){ alert('มีชื่อเล่นนี้แล้ว'); return false; } const id=(state.people.reduce(function(m,p){return Math.max(m,p.id||0);},0))+1; state.people.push({id:id,nick:nick,real:real}); if(selectIt) editorMembers.add(nick); save(); renderPeopleAll(); return true; }
+function addPersonFromManager(){ if(addPersonCore(document.getElementById('mpNick').value,document.getElementById('mpReal').value,false)){ document.getElementById('mpNick').value=''; document.getElementById('mpReal').value=''; } }
 function pickAccent(c){ editAccent=c; document.querySelectorAll('#swatches .sw').forEach(s=>s.classList.toggle('sel',s.dataset.c===c)); }
 function setMode(m){ editMode=m; document.getElementById('segGroup').classList.toggle('on',m==='group'); document.getElementById('segSolo').classList.toggle('on',m==='solo'); document.getElementById('membersField').style.display=m==='solo'?'none':'block'; }
 
