@@ -204,6 +204,7 @@
           <input type="text" id="fNote" placeholder="สลิป" />
         </div>
       </div>
+      <div class="field"><label>แนบสลิป (ไม่บังคับ — แนบแล้วระบบจะส่งเข้า Discord ให้)</label><input type="file" id="fSlip" accept="image/*" /></div>
       <button class="btn primary" onclick="addContribution()">เพิ่มยอดออม</button>
     </div>
   </div>
@@ -296,6 +297,13 @@
     <div class="grab"></div>
     <h3>แชร์ให้เพื่อนเห็นพร้อมกัน</h3>
     <p class="sub">เว็บนี้พร้อมแชร์อยู่แล้ว · ส่งลิงก์ให้เพื่อนเปิดบนมือถือได้เลย</p>
+    <div class="hint"><b>แจ้งเตือนเข้า Discord:</b> เวลาเพิ่มยอด (พร้อมสลิป) ระบบจะส่งข้อความว่าใครโอนเท่าไหร่ + รูปสลิป + ยอดสะสมล่าสุด เข้าห้อง Discord ให้อัตโนมัติ
+      <ol><li>ในห้อง Discord กดรูปเฟือง (แก้ไขห้อง) → Integrations → Webhooks → New Webhook</li>
+      <li>กด Copy Webhook URL แล้วเอามาวางด้านล่าง</li></ol>
+    </div>
+    <div class="field"><label>Discord Webhook URL</label><input type="text" id="dWebhook" placeholder="https://discord.com/api/webhooks/..."></div>
+    <button class="btn primary" onclick="saveDiscord()">เชื่อม Discord</button>
+    <div style="height:18px"></div>
     <div class="hint"><b>อยากให้ตัวเลขตรงกันเรียลไทม์ทุกคน?</b> ใช้ Google Sheet เป็นฐานข้อมูลกลางของเป้านี้
       <ol><li>สร้างชีตคอลัมน์: <b>Date, Name, Amount, Note</b></li>
       <li>ไฟล์ → แชร์ → เผยแพร่ไปยังเว็บ → เลือกชีต รูปแบบ <b>CSV</b> → คัดลอกลิงก์</li>
@@ -510,10 +518,14 @@ function addContribution(){
   const amount=parseFloat(document.getElementById('fAmount').value);
   const note=document.getElementById('fNote').value.trim();
   if(!amount||amount<=0){ alert('ใส่จำนวนเงินให้ถูกต้อง'); return; }
+  const slipEl=document.getElementById('fSlip');
+  const slip=slipEl&&slipEl.files&&slipEl.files[0]?slipEl.files[0]:null;
   const id=(g.contributions.reduce((m,x)=>Math.max(m,x.id||0),0))+1;
-  g.contributions.push({id,month,name,amount,note});
+  g.contributions.push({id,month,name,amount,note,hasSlip:!!slip});
   document.getElementById('fAmount').value=''; document.getElementById('fNote').value='';
   save(); render();
+  notifyDiscord(g,{name,month,amount,note},slip);
+  if(slipEl) slipEl.value='';
 }
 function delItem(id){ if(!confirm('ลบรายการนี้?'))return; const g=activeGoal(); g.contributions=g.contributions.filter(x=>x.id!==id); save(); render(); }
 function toggle(key){ collapsed[key]=!collapsed[key]; const b=document.getElementById(key==='members'?'tgMembers':'tgGrid'); if(b)b.textContent=collapsed[key]?'แสดง':'ย่อ'; render(); }
@@ -565,7 +577,8 @@ function deleteGoal(){
   state.goals=state.goals.filter(g=>g.id!==editingId); state.activeId=state.goals[0]?state.goals[0].id:null; save(); closeModal('mGoal'); render();
 }
 
-function openShare(){ document.getElementById('sSheet').value=activeGoal().sheetCsvUrl||''; showModal('mShare'); }
+function openShare(){ const g=activeGoal(); document.getElementById('sSheet').value=g?(g.sheetCsvUrl||''):''; document.getElementById('dWebhook').value=state.discord||''; showModal('mShare'); }
+function saveDiscord(){ state.discord=document.getElementById('dWebhook').value.trim(); save(); flash(state.discord?'เชื่อม Discord แล้ว ✓':'ลบ Webhook แล้ว'); }
 function saveSheetUrl(){
   const url=document.getElementById('sSheet').value.trim(); const g=activeGoal(); g.sheetCsvUrl=url; save();
   if(url) fetchSheet(g,url).then(()=>{ closeModal('mShare'); render(); }).catch(e=>alert('ดึงข้อมูลไม่ได้: '+e.message));
@@ -594,6 +607,22 @@ function exportJSON(){ const blob=new Blob([JSON.stringify(state,null,2)],{type:
 function importJSON(ev){ const f=ev.target.files[0]; if(!f)return; const r=new FileReader();
   r.onload=()=>{ try{ const s=JSON.parse(r.result); if(!s.goals||!s.goals.length) throw 0; state=s; if(!state.activeId)state.activeId=state.goals[0].id; save(); closeModal('mShare'); render(); flash('โหลดไฟล์สำเร็จ'); }catch(e){ alert('ไฟล์ไม่ถูกต้อง'); } };
   r.readAsText(f); }
+
+async function notifyDiscord(g,c,slip){
+  const url=state.discord; if(!url||!g) return;
+  const {saved}=tallies(g); const target=g.target||1; const pct=Math.round(saved/target*100);
+  let color=24432; try{ color=parseInt((g.accent||'#059669').replace('#',''),16); }catch(e){}
+  const embed={ title:`✅ ${c.name} โอนแล้ว ${money(c.amount,g.currency)}`, color:color,
+    description:`${g.emoji||'🎯'} ${g.name} · งวด ${ymLabel(c.month)}${c.note?(' · '+c.note):''}`,
+    fields:[{name:'ยอดสะสมตอนนี้',value:`${money(saved,g.currency)} / ${money(target,g.currency)} (${pct}%)`}],
+    footer:{text:'เป้าเงิน'}, timestamp:new Date().toISOString() };
+  const payload={ username:'เป้าเงิน', embeds:[embed] };
+  try{
+    if(slip){ const fd=new FormData(); fd.append('payload_json',JSON.stringify(payload)); fd.append('files[0]',slip,slip.name||'slip.png'); await fetch(url,{method:'POST',body:fd}); }
+    else { await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}); }
+    flash('แจ้งเข้า Discord แล้ว ✓');
+  }catch(e){ flash('ส่ง Discord ไม่ได้ — เช็กลิงก์ Webhook'); }
+}
 
 function esc(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function clampMonth(ym,g){ const min=g.start,max=g.end; return ym<min?min:(ym>max?max:ym); }
